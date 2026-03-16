@@ -269,13 +269,14 @@ export default function AuthPage() {
         background: `linear-gradient(to bottom, var(--vibe-page-from), var(--vibe-page-via), var(--vibe-page-to))`,
       }}
     >
-      {/* Fixed top-right controls — language + theme */}
-      <AuthControls />
-
       <div className="w-full max-w-sm mx-auto">
 
         {/* ── Hero section ──────────────────────────────────────────────────── */}
         <div className="text-center mb-8">
+          {/* Language + theme controls — visually connected to the hero */}
+          <div className="mb-4">
+            <AuthControls inline />
+          </div>
           {/* Vinyl record — central identity element, always gently spinning */}
           <VinylRecord isSpinning={true} emoji="🎵" />
 

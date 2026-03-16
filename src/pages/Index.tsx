@@ -18,13 +18,11 @@ import PlayerControls from "@/components/PlayerControls";
 import PlaylistPanel from "@/components/PlaylistPanel";
 import VibeCreatorModal from "@/components/VibeCreatorModal";
 import SourceToggle from "@/components/SourceToggle";
-import ResumeBanner from "@/components/ResumeBanner";
 import BatteryTip from "@/components/BatteryTip";
 import EmptyLibraryState from "@/components/EmptyLibraryState";
 import SaveMixDialog from "@/components/SaveMixDialog";
 import MyMixesPanel from "@/components/MyMixesPanel";
 import RecentlyPlayedPanel from "@/components/RecentlyPlayedPanel";
-import ResumePlaybackBanner from "@/components/ResumePlaybackBanner";
 import AuthControls from "@/components/AuthControls";
 import { Disc3, Settings, User, LogOut, Cloud, HardDrive, Save, ListMusic, Clock, Heart } from "lucide-react";
 
@@ -204,9 +202,6 @@ const Index = () => {
         background: `linear-gradient(to bottom, var(--vibe-page-from), var(--vibe-page-via), var(--vibe-page-to))`,
       }}
     >
-      {/* Fixed top-right: language + theme controls (matches auth page) */}
-      <AuthControls />
-
       <div className="w-full max-w-md mx-auto">
 
         {/* ── Branding header ─────────────────────────────────────────────────── */}
@@ -231,6 +226,10 @@ const Index = () => {
           >
             {t("vintageVibePlayer")}
           </p>
+          {/* Language + theme controls — part of the header composition */}
+          <div className="mt-2">
+            <AuthControls inline />
+          </div>
         </div>
 
         {/* ── Status bar: user + storage mode ─────────────────────────────────── */}
@@ -528,22 +527,6 @@ const Index = () => {
         </p>
 
       </div>{/* end max-w-md */}
-
-      {/* ── Floating banners ────────────────────────────────────────────────── */}
-      {player.needsResume && (
-        <ResumeBanner
-          onResume={player.togglePlay}
-          onDismiss={player.dismissResume}
-        />
-      )}
-
-      {!player.currentTrack && resume.resumeData && (
-        <ResumePlaybackBanner
-          resumeData={resume.resumeData}
-          onResume={handleResumePlayback}
-          onDismiss={resume.clearResume}
-        />
-      )}
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       <VibeCreatorModal

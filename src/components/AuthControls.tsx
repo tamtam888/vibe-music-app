@@ -2,12 +2,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 
+interface AuthControlsProps {
+  /** When true, renders inline (no fixed positioning). Default: fixed top-right overlay. */
+  inline?: boolean;
+}
+
 /**
- * Fixed top-right controls for the auth page.
- * Shows labelled buttons for language (English / עברית) and theme (Dark / Light).
- * Always rendered left-to-right regardless of the page language direction.
+ * Language and theme controls.
+ * Use inline={true} to embed inside a layout section.
+ * Default (no prop) renders as fixed top-right overlay.
  */
-export default function AuthControls() {
+export default function AuthControls({ inline = false }: AuthControlsProps) {
   const { lang, setLang } = useLanguage();
   const { theme, setTheme } = useTheme();
 
@@ -49,7 +54,7 @@ export default function AuthControls() {
 
   return (
     <div
-      className="fixed top-3 right-3 z-50 flex items-center gap-1"
+      className={inline ? "flex items-center justify-center gap-1" : "fixed top-3 right-3 z-50 flex items-center gap-1"}
       dir="ltr"
       aria-label="Language and theme controls"
     >

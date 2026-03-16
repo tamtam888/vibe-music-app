@@ -129,11 +129,11 @@ export const playlists: Playlist[] = [
       },
       {
         id: "pop-2",
-        title: "Kool Kats",
+        title: "Backed Vibes Clean",
         artist: "Kevin MacLeod",
-        duration: "3:40",
-        url: "https://commons.wikimedia.org/wiki/Special:FilePath/Kool_Kats_(MacLeod,_Kevin)_(ISRC_USUAN1100601).oga",
-        energy: 7, mood: "uplifting", texture: "vocal", bpm: 125,
+        duration: "2:04",
+        url: "https://commons.wikimedia.org/wiki/Special:FilePath/Kevin_MacLeod_-_Backed_Vibes_Clean.ogg",
+        energy: 7, mood: "uplifting", texture: "vocal", bpm: 118,
       },
       {
         id: "pop-3",
@@ -152,22 +152,6 @@ export const playlists: Playlist[] = [
     description: "High-energy pump-up & party tracks",
     color: "from-red-900 to-orange-950",
     tracks: [
-      {
-        id: "work-1",
-        title: "Faceoff",
-        artist: "Kevin MacLeod",
-        duration: "1:13",
-        url: "https://commons.wikimedia.org/wiki/Special:FilePath/Faceoff_(MacLeod,_Kevin)_(ISRC_USUAN1100403).oga",
-        energy: 9, mood: "driving", texture: "electronic", bpm: 145,
-      },
-      {
-        id: "work-2",
-        title: "Interloper",
-        artist: "Kevin MacLeod",
-        duration: "4:23",
-        url: "https://commons.wikimedia.org/wiki/Special:FilePath/Interloper_(MacLeod,_Kevin)_(ISRC_USUAN1100401).oga",
-        energy: 9, mood: "driving", texture: "electronic", bpm: 128,
-      },
       {
         id: "energy-3",
         title: "The Complex",
