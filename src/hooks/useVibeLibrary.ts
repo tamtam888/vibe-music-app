@@ -171,7 +171,7 @@ export function useVibeLibrary() {
   }, []);
 
   const addCustomVibe = useCallback((vibe: Playlist) => {
-    setVibes((prev) => [...prev, vibe]);
+    setVibes((prev) => [...prev, { ...vibe, isCustom: true }]);
   }, []);
 
   const removeCustomVibe = useCallback((vibeId: string) => {

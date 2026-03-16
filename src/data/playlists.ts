@@ -30,6 +30,10 @@ export interface Playlist {
   description: string;
   color: string;
   tracks: Track[];
+  /** True for user-created vibes; absent/false for system vibes. */
+  isCustom?: boolean;
+  /** User ID of the creator. Set at creation time, not modified later. */
+  createdBy?: string;
 }
 
 // All built-in tracks use real, playable audio files from Wikimedia Commons.
