@@ -1,0 +1,293 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 20% 4%;
+    --foreground: 36 30% 85%;
+
+    --card: 30 25% 8%;
+    --card-foreground: 36 30% 85%;
+
+    --popover: 30 25% 8%;
+    --popover-foreground: 36 30% 85%;
+
+    --primary: 36 60% 45%;
+    --primary-foreground: 30 20% 4%;
+
+    --secondary: 30 20% 14%;
+    --secondary-foreground: 36 30% 80%;
+
+    --muted: 30 15% 12%;
+    --muted-foreground: 36 15% 50%;
+
+    --accent: 36 50% 30%;
+    --accent-foreground: 36 30% 90%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 20% 15%;
+    --input: 30 20% 15%;
+    --ring: 36 60% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 20% 6%;
+    --sidebar-foreground: 36 30% 80%;
+    --sidebar-primary: 36 60% 45%;
+    --sidebar-primary-foreground: 30 20% 4%;
+    --sidebar-accent: 30 20% 12%;
+    --sidebar-accent-foreground: 36 30% 80%;
+    --sidebar-border: 30 20% 15%;
+    --sidebar-ring: 36 60% 45%;
+
+    /* Vibe theme tokens - Dark */
+    --vibe-page-from: #1c1917;
+    --vibe-page-via: rgba(69, 26, 3, 0.2);
+    --vibe-page-to: #1c1917;
+    --vibe-card-bg: linear-gradient(145deg, #2a1f12 0%, #1a1209 30%, #231a0d 60%, #1e150a 100%);
+    --vibe-card-shadow: 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,200,100,0.05), inset 0 -1px 0 rgba(0,0,0,0.3);
+    --vibe-card-border: rgba(120, 53, 15, 0.3);
+    --vibe-grain-color: rgba(200,150,50,0.3);
+    --vibe-title-from: #d4a056;
+    --vibe-title-to: #8b6914;
+    --vibe-disc-icon: #d97706;
+  }
+
+  .vibe-light {
+    --background: 36 30% 92%;
+    --foreground: 30 30% 15%;
+
+    --card: 36 25% 88%;
+    --card-foreground: 30 30% 15%;
+
+    --popover: 36 30% 90%;
+    --popover-foreground: 30 30% 15%;
+
+    --primary: 36 60% 40%;
+    --primary-foreground: 36 30% 95%;
+
+    --secondary: 36 20% 82%;
+    --secondary-foreground: 30 25% 25%;
+
+    --muted: 36 15% 85%;
+    --muted-foreground: 30 15% 45%;
+
+    --accent: 36 40% 60%;
+    --accent-foreground: 30 30% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 36 20% 78%;
+    --input: 36 20% 78%;
+    --ring: 36 60% 40%;
+
+    /* Vibe theme tokens - Light */
+    --vibe-page-from: #faf5ee;
+    --vibe-page-via: #f5ead6;
+    --vibe-page-to: #f0e6d2;
+    --vibe-card-bg: linear-gradient(145deg, #f7efe3 0%, #efe3d0 30%, #f2e8d8 60%, #ede0cc 100%);
+    --vibe-card-shadow: 0 15px 40px rgba(120,80,20,0.12), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(180,140,60,0.1);
+    --vibe-card-border: rgba(180, 140, 60, 0.3);
+    --vibe-grain-color: rgba(160,120,40,0.15);
+    --vibe-title-from: #8b6914;
+    --vibe-title-to: #6b4f0e;
+    --vibe-disc-icon: #92400e;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .animate-spin-vinyl {
+    animation: spin-vinyl 3s linear infinite;
+  }
+}
+
+@keyframes spin-vinyl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* =============================================================
+   UNIFIED LIGHT MODE THEME OVERRIDES
+   Color system:
+     Primary text:   #3b2407
+     Secondary text: #5c3a0e
+     Muted text:     #7a4b16
+   ============================================================= */
+
+/* --- Text: amber → warm brown --- */
+.vibe-light .text-amber-100  { color: #3b2407; }
+.vibe-light .text-amber-200  { color: #3b2407; }
+.vibe-light .text-amber-300  { color: #3b2407; }
+.vibe-light .text-amber-400  { color: #3b2407; }
+.vibe-light .text-amber-500  { color: #5c3a0e; }
+.vibe-light .text-amber-600  { color: #5c3a0e; }
+
+/* Text with opacity variants → strong brown with appropriate opacity */
+.vibe-light .text-amber-300\/70 { color: #3b2407 !important; }
+.vibe-light .text-amber-300\/80 { color: #3b2407 !important; }
+.vibe-light .text-amber-400\/60 { color: #5c3a0e; }
+.vibe-light .text-amber-400\/70 { color: #5c3a0e; }
+.vibe-light .text-amber-400\/80 { color: #3b2407; }
+.vibe-light .text-amber-500\/20 { color: #7a4b16; }
+.vibe-light .text-amber-500\/30 { color: #7a4b16; }
+.vibe-light .text-amber-500\/40 { color: #7a4b16; }
+.vibe-light .text-amber-500\/50 { color: #5c3a0e; }
+.vibe-light .text-amber-500\/60 { color: #5c3a0e; }
+.vibe-light .text-amber-500\/70 { color: #5c3a0e; }
+.vibe-light .text-amber-600\/40 { color: #5c3a0e; }
+.vibe-light .text-amber-700\/40 { color: #5c3a0e; }
+.vibe-light .text-amber-800\/30 { color: #7a4b16; }
+
+/* --- Hover text → darker brown --- */
+.vibe-light .hover\:text-amber-100:hover { color: #3b2407; }
+.vibe-light .hover\:text-amber-200:hover { color: #3b2407; }
+.vibe-light .hover\:text-amber-300:hover { color: #3b2407; }
+.vibe-light .hover\:text-amber-400:hover { color: #3b2407; }
+.vibe-light .hover\:text-amber-400\/60:hover { color: #3b2407; }
+.vibe-light .hover\:text-amber-500:hover { color: #3b2407; }
+
+/* --- Backgrounds: amber → warm cream/tan --- */
+.vibe-light .bg-amber-800     { background-color: #b8860b; }
+.vibe-light .bg-amber-800\/20 { background-color: rgba(180, 140, 60, 0.1); }
+.vibe-light .bg-amber-800\/30 { background-color: rgba(180, 140, 60, 0.12); }
+.vibe-light .bg-amber-800\/50 { background-color: rgba(180, 140, 60, 0.2); }
+.vibe-light .bg-amber-800\/60 { background-color: rgba(180, 140, 60, 0.25); }
+.vibe-light .bg-amber-900\/20 { background-color: rgba(180, 140, 60, 0.1); }
+.vibe-light .bg-amber-900\/30 { background-color: rgba(180, 140, 60, 0.12); }
+.vibe-light .bg-amber-900\/40 { background-color: rgba(180, 140, 60, 0.15); }
+.vibe-light .bg-amber-900\/50 { background-color: rgba(180, 140, 60, 0.18); }
+.vibe-light .bg-amber-900\/90 { background-color: rgba(245, 234, 214, 0.95); }
+.vibe-light .bg-amber-950\/30 { background-color: rgba(200, 170, 100, 0.12); }
+.vibe-light .bg-amber-950\/40 { background-color: rgba(200, 170, 100, 0.15); }
+.vibe-light .bg-amber-950\/50 { background-color: rgba(200, 170, 100, 0.2); }
+.vibe-light .bg-amber-950\/95 { background-color: rgba(45, 30, 10, 0.97); }
+
+/* Slider */
+.vibe-light .bg-amber-500     { background-color: #8b6914; }
+.vibe-light .bg-amber-600     { background-color: #7a5c10; }
+.vibe-light .bg-amber-600\/70 { background-color: rgba(122, 92, 16, 0.7); }
+
+/* --- Hover backgrounds --- */
+.vibe-light .hover\:bg-amber-700:hover     { background-color: #92400e; }
+.vibe-light .hover\:bg-amber-800:hover     { background-color: #a67c00; }
+.vibe-light .hover\:bg-amber-800\/50:hover { background-color: rgba(180, 140, 60, 0.22); }
+.vibe-light .hover\:bg-amber-900\/20:hover { background-color: rgba(180, 140, 60, 0.1); }
+.vibe-light .hover\:bg-amber-900\/30:hover { background-color: rgba(180, 140, 60, 0.14); }
+
+/* --- Borders --- */
+.vibe-light .border-amber-600     { border-color: #7a5c10; }
+.vibe-light .border-amber-600\/50 { border-color: rgba(146, 100, 30, 0.5); }
+.vibe-light .border-amber-700\/40 { border-color: rgba(146, 100, 30, 0.4); }
+.vibe-light .border-amber-700\/50 { border-color: rgba(146, 100, 30, 0.45); }
+.vibe-light .border-amber-800\/30 { border-color: rgba(146, 100, 30, 0.25); }
+.vibe-light .border-amber-800\/40 { border-color: rgba(146, 100, 30, 0.35); }
+.vibe-light .border-amber-900\/20 { border-color: rgba(146, 100, 30, 0.22); }
+.vibe-light .border-amber-900\/30 { border-color: rgba(146, 100, 30, 0.3); }
+.vibe-light .border-amber-900\/40 { border-color: rgba(146, 100, 30, 0.35); }
+.vibe-light .border-amber-900\/50 { border-color: rgba(146, 100, 30, 0.45); }
+.vibe-light .hover\:border-amber-700\/50:hover { border-color: rgba(146, 100, 30, 0.5); }
+
+/* --- Gradients --- */
+.vibe-light .from-amber-700 { --tw-gradient-from: #8b6914; }
+.vibe-light .to-amber-900   { --tw-gradient-to: #6b4f0e; }
+.vibe-light .via-amber-800\/30 { --tw-gradient-via: rgba(146, 100, 30, 0.3); }
+.vibe-light .hover\:from-amber-600:hover { --tw-gradient-from: #a67c00; }
+.vibe-light .hover\:to-amber-800:hover   { --tw-gradient-to: #78350f; }
+
+/* --- Vinyl record --- */
+.vibe-light .from-zinc-900       { --tw-gradient-from: #c4b08a; }
+.vibe-light .via-zinc-800        { --tw-gradient-via: #b8a478; }
+.vibe-light .to-zinc-950         { --tw-gradient-to: #a89060; }
+.vibe-light .border-zinc-700\/50 { border-color: rgba(146, 115, 60, 0.5); }
+.vibe-light .border-zinc-700\/20 { border-color: rgba(146, 115, 60, 0.2); }
+.vibe-light .bg-zinc-950         { background-color: #5c4a2a; }
+.vibe-light .shadow-\[0_0_40px_rgba\(0\,0\,0\,0\.6\)\,inset_0_0_60px_rgba\(0\,0\,0\,0\.4\)\] {
+  box-shadow: 0 0 40px rgba(120,80,20,0.15), inset 0 0 60px rgba(120,80,20,0.1);
+}
+.vibe-light .shadow-amber-950\/50 { --tw-shadow-color: rgba(120,80,20,0.18); }
+
+/* --- Error states --- */
+.vibe-light .bg-red-950\/30     { background-color: rgba(220, 38, 38, 0.08); }
+.vibe-light .border-red-900\/30 { border-color: rgba(220, 38, 38, 0.2); }
+.vibe-light .text-red-300       { color: #dc2626; }
+.vibe-light .text-red-400       { color: #dc2626; }
+.vibe-light .text-red-400\/50   { color: rgba(220, 38, 38, 0.6); }
+.vibe-light .text-red-400\/60   { color: rgba(220, 38, 38, 0.7); }
+.vibe-light .text-red-400\/80   { color: rgba(220, 38, 38, 0.85); }
+.vibe-light .hover\:text-red-400\/60:hover { color: rgba(220, 38, 38, 0.7); }
+
+/* --- Emerald (AI Flow) --- */
+.vibe-light .bg-emerald-900\/40          { background-color: rgba(5, 150, 105, 0.1); }
+.vibe-light .bg-emerald-800\/50          { background-color: rgba(5, 150, 105, 0.15); }
+.vibe-light .border-emerald-700\/30      { border-color: rgba(5, 150, 105, 0.3); }
+.vibe-light .text-emerald-300            { color: #047857; }
+.vibe-light .text-emerald-400            { color: #047857; }
+.vibe-light .text-emerald-400\/90        { color: rgba(5, 100, 70, 0.95); }
+.vibe-light .text-emerald-500\/60        { color: rgba(5, 100, 70, 0.7); }
+.vibe-light .text-emerald-500\/70        { color: rgba(5, 100, 70, 0.8); }
+.vibe-light .hover\:bg-emerald-800\/50:hover { background-color: rgba(5, 150, 105, 0.18); }
+.vibe-light .hover\:text-emerald-200:hover   { color: #047857; }
+
+/* --- Green (Spotify) --- */
+.vibe-light .bg-green-800\/60     { background-color: rgba(22, 163, 74, 0.2); }
+.vibe-light .border-green-600\/50 { border-color: rgba(22, 163, 74, 0.35); }
+.vibe-light .text-green-200       { color: #15803d; }
+
+/* --- Placeholders --- */
+.vibe-light .placeholder\:text-amber-400\/60::placeholder { color: rgba(122, 75, 22, 0.55); }
+.vibe-light .placeholder\:text-amber-400\/70::placeholder { color: rgba(122, 75, 22, 0.55); }
+.vibe-light .placeholder\:text-amber-500\/60::placeholder { color: rgba(122, 75, 22, 0.55); }
+
+/* =============================================================
+   EMAIL INPUT – always readable
+   ============================================================= */
+
+/* Dark mode (default) */
+input[type="email"] {
+  color: #fff3c4 !important;
+  caret-color: #fbbf24 !important;
+}
+input[type="email"]::placeholder {
+  color: rgba(251, 191, 36, 0.6) !important;
+}
+
+/* Light mode — dark brown text on warm-cream input background */
+.vibe-light input[type="email"] {
+  color: #3b2407 !important;
+  caret-color: #92400e !important;
+}
+.vibe-light input[type="email"]::placeholder {
+  color: rgba(91, 58, 20, 0.42) !important;
+}
+
+/* =============================================================
+   PASSWORD INPUT – same treatment
+   ============================================================= */
+input[type="password"] {
+  color: #fff3c4 !important;
+  caret-color: #fbbf24 !important;
+}
+.vibe-light input[type="password"] {
+  color: #3b2407 !important;
+  caret-color: #92400e !important;
+}
+.vibe-light input[type="password"]::placeholder {
+  color: rgba(91, 58, 20, 0.42) !important;
+}
