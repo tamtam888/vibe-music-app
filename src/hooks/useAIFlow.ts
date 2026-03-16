@@ -1,44 +1,12 @@
 import { useCallback, useRef } from "react";
-import { Track, Playlist, TrackMood, TrackTexture } from "@/data/playlists";
-
-// Default metadata by vibe id
-const VIBE_DEFAULTS: Record<string, { energy: number; mood: TrackMood; texture: TrackTexture }> = {
-  "80s":        { energy: 5, mood: "uplifting", texture: "electronic" },
-  "90s-rock":   { energy: 7, mood: "driving",   texture: "guitar" },
-  "pop":        { energy: 6, mood: "uplifting", texture: "vocal" },
-  "energy":     { energy: 9, mood: "driving",   texture: "electronic" },
-  "israeli":    { energy: 5, mood: "emotional", texture: "vocal" },
-  "classical":  { energy: 3, mood: "calm",      texture: "classical" },
-};
-
-// Neutral defaults for custom vibes without known metadata
-const CUSTOM_VIBE_DEFAULT = { energy: 5, mood: "warm" as TrackMood, texture: "vocal" as TrackTexture };
-
-function getTrackEnergy(track: Track, vibeId?: string): number {
-  if (track.energy != null) return track.energy;
-  return VIBE_DEFAULTS[vibeId || ""]?.energy ?? CUSTOM_VIBE_DEFAULT.energy;
-}
-
-function getTrackMood(track: Track, vibeId?: string): TrackMood {
-  if (track.mood) return track.mood;
-  return VIBE_DEFAULTS[vibeId || ""]?.mood ?? CUSTOM_VIBE_DEFAULT.mood;
-}
-
-function getTrackTexture(track: Track, vibeId?: string): TrackTexture {
-  if (track.texture) return track.texture;
-  return VIBE_DEFAULTS[vibeId || ""]?.texture ?? CUSTOM_VIBE_DEFAULT.texture;
-}
-
-function findVibeForTrack(track: Track, vibes: Playlist[]): string | undefined {
-  for (const v of vibes) {
-    if (v.tracks.some((t) => t.id === track.id)) return v.id;
-  }
-  return undefined;
-}
-
-function isBridgeCandidate(track: Track): boolean {
-  return track.isBridge === true || track.texture === "classical" || track.texture === "instrumental";
-}
+import { Track, Playlist } from "@/data/playlists";
+import {
+  getTrackEnergy,
+  getTrackMood,
+  getTrackTexture,
+  findVibeForTrack,
+  isBridgeCandidate,
+} from "@/lib/vibeMatch";
 
 export interface AIFlowQueueItem {
   track: Track;

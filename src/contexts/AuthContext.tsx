@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/` },
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
       });
       return error;
     },
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string): Promise<AuthError | null> => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/` },
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
       });
       return error;
     },
