@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Playlist, Track, SpotifyItemType } from "@/data/playlists";
 import { supabase } from "@/integrations/supabase/client";
-import { REQUIRED_VIBE_IDS } from "@/hooks/useVibeLibrary";
+import { REQUIRED_VIBE_IDS, generateTrackId, generateVibeId } from "@/hooks/useVibeLibrary";
 import {
   Dialog,
   DialogContent,
@@ -219,7 +219,7 @@ const VibeCreatorModal = ({
     }
 
     const track: Track = {
-      id: `custom-${Date.now()}`,
+      id: generateTrackId(),
       title: trimmedTitle,
       artist: newArtist.trim() || "Unknown Artist",
       duration: "—",
@@ -257,7 +257,7 @@ const VibeCreatorModal = ({
         const publicUrl = await uploadMp3(selectedVibe.id, file);
         const title = file.name.replace(/\.[^.]+$/, "");
         const track: Track = {
-          id: `upload-${Date.now()}-${i}`,
+          id: generateTrackId(),
           title,
           artist: newArtist.trim() || "Unknown Artist",
           duration: "—",
@@ -280,7 +280,7 @@ const VibeCreatorModal = ({
   const handleCreateVibe = () => {
     const name = createName.trim();
     if (!name || !onAddCustomVibe) return;
-    const id = `custom-${Date.now()}`;
+    const id = generateVibeId();
     const newVibe: Playlist = {
       id,
       name,

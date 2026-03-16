@@ -8,6 +8,16 @@ const CURRENT_SCHEMA_VERSION = 13; // v13: remove energy duplicate tracks (work-
 // Protected base vibe IDs that must always exist
 export const REQUIRED_VIBE_IDS = ["80s", "90s-rock", "pop", "energy", "israeli", "classical"];
 
+/** Collision-resistant ID for user-added tracks. */
+export function generateTrackId(): string {
+  return `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/** Collision-resistant ID for user-created vibes. */
+export function generateVibeId(): string {
+  return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
 // Legacy vibe IDs that should be merged into "energy" and removed
 const LEGACY_MERGE_INTO_ENERGY = ["workout", "party", "party-mix"];
 

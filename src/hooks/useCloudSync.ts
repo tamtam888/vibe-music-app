@@ -79,6 +79,7 @@ export function useCloudSync({
           description: cv.description,
           color: cv.color,
           tracks: tracksByVibe[cv.vibe_id] || [],
+          isCustom: !REQUIRED_VIBE_IDS.includes(cv.vibe_id) || undefined,
         }));
 
         // Migrate legacy vibes into energy
@@ -138,21 +139,8 @@ export function useCloudSync({
           position: i,
         }));
 
-        // Delete vibes that no longer exist, then upsert current ones
+        // Compute track rows before any destructive operations
         const currentVibeIds = currentVibes.map((v) => v.id);
-        await supabase
-          .from("user_vibes")
-          .delete()
-          .eq("user_id", userId)
-          .not("vibe_id", "in", `(${currentVibeIds.map((id) => `"${id}"`).join(",")})`);
-
-        await supabase.from("user_vibes").upsert(vibeRows, {
-          onConflict: "user_id,vibe_id",
-        });
-
-        // Delete old tracks, insert new
-        await supabase.from("user_tracks").delete().eq("user_id", userId);
-
         const trackRows = currentVibes.flatMap((v) =>
           v.tracks.map((tr, i) => ({
             user_id: userId,
@@ -177,6 +165,22 @@ export function useCloudSync({
           }))
         );
 
+        // Guard: skip destructive ops if library is unexpectedly empty
+        if (currentVibes.length === 0) return;
+
+        // Delete vibes that no longer exist, then upsert current ones
+        await supabase
+          .from("user_vibes")
+          .delete()
+          .eq("user_id", userId)
+          .not("vibe_id", "in", `(${currentVibeIds.map((id) => `"${id}"`).join(",")})`);
+
+        await supabase.from("user_vibes").upsert(vibeRows, {
+          onConflict: "user_id,vibe_id",
+        });
+
+        // Delete old tracks, insert new
+        await supabase.from("user_tracks").delete().eq("user_id", userId);
         if (trackRows.length > 0) {
           await supabase.from("user_tracks").insert(trackRows);
         }
