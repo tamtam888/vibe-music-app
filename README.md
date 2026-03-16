@@ -59,7 +59,7 @@ VIBE Music implements multiple layers of security hardening:
 | Frontend | React 18, TypeScript, Vite |
 | Styling | Tailwind CSS, shadcn/ui, CSS custom properties |
 | State | React Context, TanStack Query |
-| Backend | Lovable Cloud (PostgreSQL, Auth, Edge Functions, Storage) |
+| Backend | Supabase (PostgreSQL, Auth, Edge Functions, Storage) |
 | AI Flow | Custom energy/mood/texture scoring engine |
 | PWA | Service Worker, Web App Manifest |
 
