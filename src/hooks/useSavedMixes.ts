@@ -9,6 +9,13 @@ export interface SavedMix {
   mixType: "ai_flow" | "manual";
   createdAt: string;
   tracks: Track[];
+  /**
+   * Share token for this mix. Present only when the mix has been shared.
+   * Requires DB migration (add share_token + is_public columns to saved_mixes)
+   * before this can be persisted — not stored yet.
+   */
+  shareToken?: string;
+  isPublic?: boolean;
 }
 
 export function useSavedMixes(user: User | null) {
