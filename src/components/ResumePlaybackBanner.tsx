@@ -23,13 +23,13 @@ const ResumePlaybackBanner = ({ resumeData, onResume, onDismiss }: ResumePlaybac
   }, [onDismiss]);
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%]">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[260px]">
       <div
-        className="rounded-xl px-3 py-2.5 flex items-center gap-3"
+        className="rounded-xl px-2.5 py-2 flex items-center gap-2.5"
         style={{
           background: "var(--vibe-card-bg)",
           border: "1px solid var(--vibe-card-border)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.22)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         }}
       >
         <button

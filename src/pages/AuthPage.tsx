@@ -6,7 +6,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AuthControls from "@/components/AuthControls";
-import { Loader2, Mail, Lock, Disc3, Check } from "lucide-react";
+import { Loader2, Mail, Lock, Check } from "lucide-react";
 import VinylRecord from "@/components/VinylRecord";
 import { toast } from "sonner";
 
@@ -279,36 +279,12 @@ export default function AuthPage() {
           {/* Vinyl record — central identity element, always gently spinning */}
           <VinylRecord isSpinning={true} emoji="🎵" />
 
-          {/* WELCOME label */}
+          {/* Welcome line */}
           <p
-            className="text-[10px] uppercase tracking-[0.6em] font-medium select-none mb-1.5"
+            className="text-sm font-semibold tracking-wide select-none mt-1"
             style={{ color: c.subtitle }}
           >
-            {t("welcome")}
-          </p>
-
-          {/* VIBE MUSIC gradient title */}
-          <div className="inline-flex items-center gap-2.5 mb-1.5">
-            <Disc3 style={{ color: c.iconColor }} size={18} />
-            <h1
-              className="text-[28px] font-bold tracking-[0.3em] uppercase select-none"
-              style={{
-                background: `linear-gradient(180deg, var(--vibe-title-from), var(--vibe-title-to))`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {t("vibeMusic")}
-            </h1>
-            <Disc3 style={{ color: c.iconColor }} size={18} />
-          </div>
-
-          {/* Subtitle */}
-          <p
-            className="text-[10px] uppercase tracking-[0.5em] font-medium select-none"
-            style={{ color: c.subtitle }}
-          >
-            {t("vintageVibePlayer")}
+            {t("welcomeToVibeMusic")}
           </p>
 
           {/* Decorative thin divider — separates hero from auth card */}
@@ -579,7 +555,7 @@ export default function AuthPage() {
             className="text-[10px] tracking-wider"
             style={{ color: c.footerText }}
           >
-            {t("craftedWithWarmth")}
+            © TK
           </p>
         </div>
 

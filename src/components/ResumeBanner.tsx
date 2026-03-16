@@ -9,20 +9,29 @@ interface ResumeBannerProps {
 const ResumeBanner = ({ onResume, onDismiss }: ResumeBannerProps) => {
   const { t } = useLanguage();
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-900/90 border border-amber-700/50 shadow-md backdrop-blur-sm">
+    <div
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur-sm"
+      style={{
+        background: "var(--vibe-card-bg)",
+        border: "1px solid var(--vibe-card-border)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+      }}
+    >
       <button
         onClick={onResume}
-        className="flex items-center gap-1.5 text-amber-200 text-xs font-semibold uppercase tracking-wider hover:text-amber-100 transition-colors"
+        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition-opacity hover:opacity-80"
+        style={{ color: "var(--vibe-title-from)" }}
       >
-        <Play size={14} className="ml-0.5" />
+        <Play size={13} className="ml-0.5" />
         {t("tapToResume")}
       </button>
       <button
         onClick={onDismiss}
-        className="p-0.5 text-amber-500/60 hover:text-amber-300 transition-colors"
+        className="p-0.5 transition-opacity hover:opacity-80"
+        style={{ color: "var(--vibe-title-from)", opacity: 0.45 }}
         aria-label={t("done")}
       >
-        <X size={14} />
+        <X size={13} />
       </button>
     </div>
   );
