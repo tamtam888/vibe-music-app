@@ -7,7 +7,7 @@ interface VinylRecordProps {
 
 const VinylRecord = ({ isSpinning, emoji }: VinylRecordProps) => {
   return (
-    <div className="relative w-48 h-48 mx-auto my-6">
+    <div className="relative w-48 h-48 mx-auto mt-0 mb-4">
       {/* Vinyl disc */}
       <div
         className={cn(

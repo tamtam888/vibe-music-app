@@ -69,7 +69,7 @@ const PlaylistPanel = ({
                 key={track.id}
                 onClick={() => onSelectTrack(activePlaylist, i)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left",
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left",
                   "hover:bg-amber-800/20",
                   isActive
                     ? "bg-amber-800/30 border border-amber-700/40"

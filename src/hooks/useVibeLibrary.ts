@@ -3,7 +3,7 @@ import { playlists as defaultPlaylists, Playlist, Track } from "@/data/playlists
 
 const STORAGE_KEY = "vibe-music-library";
 const SCHEMA_VERSION_KEY = "vibe-music-schema-version";
-const CURRENT_SCHEMA_VERSION = 10; // v10: replace SoundHelix placeholders with real audio sources
+const CURRENT_SCHEMA_VERSION = 11; // v11: curate default vibe tracks — fix mismatches, unique energy set
 
 // Protected base vibe IDs that must always exist
 export const REQUIRED_VIBE_IDS = ["80s", "90s-rock", "pop", "energy", "israeli", "classical"];
@@ -62,6 +62,19 @@ function safeMergeVibes(existing: Playlist[]): Playlist[] {
       ...vibe,
       tracks: vibe.tracks.map((t) => defaultTrackById.get(t.id) ?? t),
     };
+  });
+
+  // Step 4.6: Sync system vibe track lists with current defaults.
+  // Replaces the full track list of each system vibe with the current defaults,
+  // then appends any user-added tracks (IDs absent from all default playlists).
+  // This removes stale built-in tracks and adds newly introduced built-in tracks.
+  const defaultVibeById = new Map(defaultPlaylists.map((v) => [v.id, v]));
+  merged = merged.map((vibe) => {
+    if (!REQUIRED_VIBE_IDS.includes(vibe.id)) return vibe;
+    const defaultVibe = defaultVibeById.get(vibe.id);
+    if (!defaultVibe) return vibe;
+    const userTracks = vibe.tracks.filter((t) => !defaultTrackById.has(t.id));
+    return { ...vibe, tracks: [...defaultVibe.tracks, ...userTracks] };
   });
 
   // Step 5: Sort — system vibes in canonical order first, then custom vibes

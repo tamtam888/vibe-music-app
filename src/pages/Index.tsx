@@ -210,7 +210,7 @@ const Index = () => {
       <div className="w-full max-w-md mx-auto">
 
         {/* ── Branding header ─────────────────────────────────────────────────── */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <div className="inline-flex items-center gap-2 mb-1">
             <Disc3 style={{ color: discIconColor }} size={20} />
             <h1
@@ -325,18 +325,16 @@ const Index = () => {
                 <p className="text-red-400/60 text-xs">{t("tryAnotherVibe")}</p>
               </div>
             ) : player.currentTrack ? (
-              <div className="text-center mb-4 flex items-center justify-center gap-2">
-                <div className="min-w-0">
-                  <p className="text-amber-200 font-semibold text-sm truncate">
-                    {player.currentTrack.title}
-                  </p>
-                  <p className="text-amber-500/50 text-xs truncate">
-                    {player.currentTrack.artist}
-                  </p>
-                </div>
+              <div className="relative mb-4 text-center px-8">
+                <p className="text-amber-200 font-semibold text-sm truncate">
+                  {player.currentTrack.title}
+                </p>
+                <p className="text-amber-500/50 text-xs truncate">
+                  {player.currentTrack.artist}
+                </p>
                 <button
                   onClick={() => favorites.toggleFavorite(player.currentTrack!)}
-                  className="flex-shrink-0 p-1"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-1"
                   aria-label={t("favorites")}
                 >
                   <Heart
@@ -373,7 +371,7 @@ const Index = () => {
               onVolumeChange={player.changeVolume}
             />
 
-            <div className="my-5 h-px bg-gradient-to-r from-transparent via-amber-800/30 to-transparent" />
+            <div className="my-4 h-px bg-gradient-to-r from-transparent via-amber-800/30 to-transparent" />
 
             {/* ── Source controls + Edit Library ───────────────────────────────── */}
             <div className="flex items-center justify-center gap-3 mb-3">

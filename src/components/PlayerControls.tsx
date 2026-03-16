@@ -54,7 +54,7 @@ const PlayerControls = ({
   const volIconColor = theme === "light" ? "#7a4b16" : undefined;
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex flex-col items-center gap-3 w-full">
 
       {/* Seek bar */}
       <div className="flex items-center gap-2 text-xs font-mono w-full px-2">
