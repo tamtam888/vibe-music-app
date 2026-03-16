@@ -3,7 +3,7 @@ import { playlists as defaultPlaylists, Playlist, Track } from "@/data/playlists
 
 const STORAGE_KEY = "vibe-music-library";
 const SCHEMA_VERSION_KEY = "vibe-music-schema-version";
-const CURRENT_SCHEMA_VERSION = 11; // v11: curate default vibe tracks — fix mismatches, unique energy set
+const CURRENT_SCHEMA_VERSION = 12; // v12: fix broken energy tracks, replace reggae Tea Roots in Israeli vibe
 
 // Protected base vibe IDs that must always exist
 export const REQUIRED_VIBE_IDS = ["80s", "90s-rock", "pop", "energy", "israeli", "classical"];
