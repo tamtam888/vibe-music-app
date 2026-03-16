@@ -38,6 +38,7 @@ const Index = () => {
   // ── UI state ────────────────────────────────────────────────────────────────
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [openVibeNew, setOpenVibeNew] = useState(false);
   const [source, setSource] = useState<"mp3" | "spotify">("mp3");
   const [aiFlowEnabled, setAiFlowEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
@@ -513,6 +514,7 @@ const Index = () => {
                 onSelectTrack={handleSelectTrack}
                 isFavorite={favorites.isFavorite}
                 onToggleFavorite={favorites.toggleFavorite}
+                onNewVibe={() => { setOpenVibeNew(true); setEditorOpen(true); }}
               />
             )}
           </div>{/* end relative z-10 */}
@@ -531,7 +533,7 @@ const Index = () => {
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       <VibeCreatorModal
         open={editorOpen}
-        onClose={() => setEditorOpen(false)}
+        onClose={() => { setEditorOpen(false); setOpenVibeNew(false); }}
         vibes={library.vibes}
         onUpdateVibe={library.updateVibe}
         onAddTrack={library.addTrackToVibe}
@@ -540,6 +542,7 @@ const Index = () => {
         onReset={library.resetToDefaults}
         onAddCustomVibe={library.addCustomVibe}
         onRemoveCustomVibe={library.removeCustomVibe}
+        openOnNew={openVibeNew}
       />
 
       <SaveMixDialog

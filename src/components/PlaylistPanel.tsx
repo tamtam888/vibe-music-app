@@ -2,6 +2,7 @@ import { Playlist, Track } from "@/data/playlists";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Music, Heart } from "lucide-react";
+import { REQUIRED_VIBE_IDS } from "@/hooks/useVibeLibrary";
 
 interface PlaylistPanelProps {
   vibes: Playlist[];
@@ -12,6 +13,7 @@ interface PlaylistPanelProps {
   onSelectTrack: (playlist: Playlist, index: number) => void;
   isFavorite?: (trackId: string) => boolean;
   onToggleFavorite?: (track: Track) => void;
+  onNewVibe?: () => void;
 }
 
 const PlaylistPanel = ({
@@ -23,31 +25,56 @@ const PlaylistPanel = ({
   onSelectTrack,
   isFavorite,
   onToggleFavorite,
+  onNewVibe,
 }: PlaylistPanelProps) => {
   const { t } = useLanguage();
   return (
     <div className="space-y-4">
       {/* Playlist chips */}
       <div className="grid grid-cols-3 gap-2">
-        {vibes.map((pl) => (
+        {vibes.map((pl) => {
+          const isCustom = !REQUIRED_VIBE_IDS.includes(pl.id);
+          const isActive = activePlaylist?.id === pl.id;
+          return (
+            <button
+              key={pl.id}
+              onClick={() => onSelectPlaylist(pl)}
+              className={cn(
+                "flex flex-col items-center gap-1 p-3 rounded-xl transition-all text-center active:scale-95",
+                "border",
+                isCustom
+                  ? isActive
+                    ? "bg-emerald-900/30 border-emerald-600/50 shadow-inner hover:border-emerald-600/50"
+                    : "bg-amber-950/30 border-emerald-900/40 hover:border-emerald-700/50 hover:bg-emerald-950/20"
+                  : isActive
+                    ? "bg-amber-900/40 border-amber-600/50 shadow-inner hover:border-amber-700/50"
+                    : "bg-amber-950/30 border-amber-900/30 hover:border-amber-700/50 hover:bg-amber-900/20"
+              )}
+            >
+              <span className="text-xl">{pl.emoji}</span>
+              <span className={cn(
+                "text-[10px] font-semibold uppercase tracking-wider leading-tight",
+                isCustom ? "text-emerald-300/70" : "text-amber-300/80"
+              )}>
+                {pl.name}
+              </span>
+              {isCustom && (
+                <span className="text-[7px] text-emerald-600/50 leading-none -mt-0.5">✦</span>
+              )}
+            </button>
+          );
+        })}
+        {onNewVibe && (
           <button
-            key={pl.id}
-            onClick={() => onSelectPlaylist(pl)}
-            className={cn(
-              "flex flex-col items-center gap-1 p-3 rounded-xl transition-all text-center",
-              "border border-amber-900/30 hover:border-amber-700/50",
-              "hover:bg-amber-900/20 active:scale-95",
-              activePlaylist?.id === pl.id
-                ? "bg-amber-900/40 border-amber-600/50 shadow-inner"
-                : "bg-amber-950/30"
-            )}
+            onClick={onNewVibe}
+            className="flex flex-col items-center gap-1 p-3 rounded-xl transition-all text-center border border-dashed border-amber-800/25 hover:border-emerald-800/50 hover:bg-emerald-950/15 active:scale-95"
           >
-            <span className="text-xl">{pl.emoji}</span>
-            <span className="text-[10px] font-semibold text-amber-300/80 uppercase tracking-wider leading-tight">
-              {pl.name}
+            <span className="text-xl text-amber-700/35">+</span>
+            <span className="text-[10px] font-semibold text-amber-700/30 uppercase tracking-wider leading-tight">
+              New
             </span>
           </button>
-        ))}
+        )}
       </div>
 
       {/* Track list */}

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Playlist, Track, SpotifyItemType } from "@/data/playlists";
 import { supabase } from "@/integrations/supabase/client";
 import { REQUIRED_VIBE_IDS, generateTrackId, generateVibeId } from "@/hooks/useVibeLibrary";
@@ -35,6 +35,8 @@ interface VibeCreatorModalProps {
   onReset: () => void;
   onAddCustomVibe?: (vibe: Playlist) => void;
   onRemoveCustomVibe?: (vibeId: string) => void;
+  /** When true, modal opens directly to the create-new-vibe form. */
+  openOnNew?: boolean;
 }
 
 const EMOJI_OPTIONS = ["🕺", "🎸", "🎤", "💪", "🇮🇱", "🎉", "🎹", "🥁", "🎺", "💿", "🌙", "☀️"];
@@ -97,6 +99,7 @@ const VibeCreatorModal = ({
   onReset,
   onAddCustomVibe,
   onRemoveCustomVibe,
+  openOnNew,
 }: VibeCreatorModalProps) => {
   const [selectedVibeId, setSelectedVibeId] = useState<string>(vibes[0]?.id || "");
   const [newTitle, setNewTitle] = useState("");
@@ -120,6 +123,11 @@ const VibeCreatorModal = ({
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Open directly to create form when triggered from the main UI
+  useEffect(() => {
+    if (open && openOnNew) setShowCreateForm(true);
+  }, [open, openOnNew]);
 
   const selectedVibe = vibes.find((v) => v.id === selectedVibeId);
   const isCustomVibe = selectedVibe && !REQUIRED_VIBE_IDS.includes(selectedVibe.id);
