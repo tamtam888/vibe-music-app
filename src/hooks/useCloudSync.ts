@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { playlists as defaultPlaylists, Playlist, Track } from "@/data/playlists";
 import type { User } from "@supabase/supabase-js";
 
@@ -209,7 +209,7 @@ export function useCloudSync({
 
   // Load on login
   useEffect(() => {
-    if (user) {
+    if (user && supabaseConfigured) {
       initialLoadDone.current = false;
       loadCloudData(user.id);
     } else {
@@ -219,7 +219,7 @@ export function useCloudSync({
 
   // Debounced save vibes on change
   useEffect(() => {
-    if (!user || !initialLoadDone.current) return;
+    if (!user || !supabaseConfigured || !initialLoadDone.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       saveToCloud(user.id, vibes);
@@ -231,13 +231,13 @@ export function useCloudSync({
 
   // Save settings on change
   useEffect(() => {
-    if (!user || !initialLoadDone.current) return;
+    if (!user || !supabaseConfigured || !initialLoadDone.current) return;
     saveSettings(user.id, { shuffle, ai_flow: aiFlow, language, theme });
   }, [user, shuffle, aiFlow, language, theme, saveSettings]);
 
   // Load settings on login
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabaseConfigured) return;
     supabase
       .from("user_settings")
       .select("*")

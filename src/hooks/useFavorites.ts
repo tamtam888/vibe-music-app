@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { Track } from "@/data/playlists";
 import type { User } from "@supabase/supabase-js";
 
@@ -15,7 +15,7 @@ export function useFavorites(user: User | null) {
 
   // Load from cloud on login
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabaseConfigured) return;
     supabase
       .from("favorite_tracks")
       .select("track_id")
@@ -38,7 +38,7 @@ export function useFavorites(user: User | null) {
     
     if (isFav) {
       newIds.delete(track.id);
-      if (user) {
+      if (user && supabaseConfigured) {
         supabase.from("favorite_tracks")
           .delete()
           .eq("user_id", user.id)
@@ -48,7 +48,7 @@ export function useFavorites(user: User | null) {
       }
     } else {
       newIds.add(track.id);
-      if (user) {
+      if (user && supabaseConfigured) {
         supabase.from("favorite_tracks")
           .upsert({
             user_id: user.id,

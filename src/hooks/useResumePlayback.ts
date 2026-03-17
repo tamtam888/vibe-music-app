@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { Track } from "@/data/playlists";
 import type { User } from "@supabase/supabase-js";
 
@@ -23,7 +23,7 @@ export function useResumePlayback(user: User | null) {
 
   // Load from cloud on login
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabaseConfigured) return;
     supabase
       .from("resume_state")
       .select("*")
@@ -60,7 +60,7 @@ export function useResumePlayback(user: User | null) {
     setResumeData(data);
     localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
 
-    if (user) {
+    if (user && supabaseConfigured) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         supabase.from("resume_state")

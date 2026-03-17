@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -43,7 +43,7 @@ export function useSpotifyConnection(user: User | null) {
 
   // Load existing connection
   useEffect(() => {
-    if (!user) { setProfile(null); return; }
+    if (!user || !supabaseConfigured) { setProfile(null); return; }
     supabase
       .from("spotify_connections")
       .select("spotify_user_id, display_name, profile_image")

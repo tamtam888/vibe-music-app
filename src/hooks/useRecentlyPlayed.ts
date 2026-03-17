@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { Track } from "@/data/playlists";
 import type { User } from "@supabase/supabase-js";
 
@@ -20,7 +20,7 @@ export function useRecentlyPlayed(user: User | null) {
 
   // Load from cloud on login
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabaseConfigured) return;
     supabase
       .from("recently_played")
       .select("*")
@@ -53,7 +53,7 @@ export function useRecentlyPlayed(user: User | null) {
       return updated;
     });
 
-    if (user) {
+    if (user && supabaseConfigured) {
       supabase.from("recently_played")
         .insert({
           user_id: user.id,
