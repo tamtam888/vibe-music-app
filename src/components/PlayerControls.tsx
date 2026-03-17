@@ -1,4 +1,4 @@
-import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap, Mic, MicOff } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface PlayerControlsProps {
@@ -16,6 +16,9 @@ interface PlayerControlsProps {
   onPrev: () => void;
   onSeek: (time: number) => void;
   onVolumeChange: (v: number) => void;
+  voiceSupported?: boolean;
+  voiceStatus?: "idle" | "listening" | "processing" | "error";
+  onVoiceTap?: () => void;
 }
 
 function formatTime(s: number) {
@@ -40,6 +43,9 @@ const PlayerControls = ({
   onPrev,
   onSeek,
   onVolumeChange,
+  voiceSupported,
+  voiceStatus,
+  onVoiceTap,
 }: PlayerControlsProps) => {
   // Slider class strings must be literal so Tailwind JIT includes them.
   const seekBarClass = theme === "light"
@@ -122,6 +128,33 @@ const PlayerControls = ({
           >
             <Zap size={16} />
           </button>
+          {voiceSupported && onVoiceTap && (
+            <button
+              onClick={onVoiceTap}
+              disabled={voiceStatus === "processing"}
+              className={`p-2 rounded-full transition-all relative ${
+                voiceStatus === "listening"
+                  ? "text-red-300 bg-red-800/50"
+                  : voiceStatus === "error"
+                    ? "text-red-500/40 hover:text-red-400 hover:bg-amber-900/30"
+                    : "text-amber-500/40 hover:text-amber-400 hover:bg-amber-900/30"
+              }`}
+              aria-label={voiceStatus === "listening" ? "Stop listening" : "Voice control"}
+              aria-pressed={voiceStatus === "listening"}
+              title={
+                voiceStatus === "error"
+                  ? "Microphone permission denied"
+                  : voiceStatus === "listening"
+                    ? "Listening…"
+                    : "Voice control"
+              }
+            >
+              {voiceStatus === "listening" && (
+                <span className="absolute inset-0 rounded-full animate-ping bg-red-500/20 pointer-events-none" />
+              )}
+              {voiceStatus === "error" ? <MicOff size={16} /> : <Mic size={16} />}
+            </button>
+          )}
         </div>
       </div>
 

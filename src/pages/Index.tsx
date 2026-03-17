@@ -13,6 +13,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useRecentlyPlayed } from "@/hooks/useRecentlyPlayed";
 import { useResumePlayback } from "@/hooks/useResumePlayback";
 import { useSpotifyConnection } from "@/hooks/useSpotifyConnection";
+import { useVoiceInput, isVoiceInputSupported } from "@/hooks/useVoiceInput";
 import VinylRecord from "@/components/VinylRecord";
 import PlayerControls from "@/components/PlayerControls";
 import PlaylistPanel from "@/components/PlaylistPanel";
@@ -141,6 +142,34 @@ const Index = () => {
   }, [aiFlowEnabled, handleAIFlowNext]);
 
   const effectiveNext = aiFlowEnabled ? handleAIFlowNext : player.playNext;
+
+  // ── Voice command handler ────────────────────────────────────────────────────
+  const handleVoiceResult = useCallback((transcript: string) => {
+    const cmd = transcript.toLowerCase().trim();
+    if (cmd.includes("next")) {
+      if (aiFlowEnabled) handleAIFlowNext(); else player.playNext();
+    } else if (cmd.includes("previous") || cmd.includes("prev") || cmd.includes("back")) {
+      player.playPrev();
+    } else if (cmd.includes("pause") || cmd.includes("stop")) {
+      player.togglePlay();
+    } else if (cmd.includes("play") || cmd.includes("resume")) {
+      player.togglePlay();
+    } else if (cmd.includes("volume up") || cmd.includes("louder")) {
+      player.changeVolume(Math.min(player.volume + 0.2, 1));
+    } else if (cmd.includes("volume down") || cmd.includes("quieter") || cmd.includes("softer")) {
+      player.changeVolume(Math.max(player.volume - 0.2, 0));
+    }
+  }, [aiFlowEnabled, handleAIFlowNext, player]);
+
+  const voice = useVoiceInput(handleVoiceResult, lang === "he" ? "he-IL" : "en-US");
+
+  const handleVoiceTap = useCallback(() => {
+    if (voice.status === "listening") {
+      voice.stopListening();
+    } else {
+      voice.startListening();
+    }
+  }, [voice.status, voice.startListening, voice.stopListening]);
 
   // Track played songs for Save Mix + Recently Played + Resume State
   useEffect(() => {
@@ -373,6 +402,9 @@ const Index = () => {
               onPrev={player.playPrev}
               onSeek={player.seek}
               onVolumeChange={player.changeVolume}
+              voiceSupported={isVoiceInputSupported}
+              voiceStatus={voice.status}
+              onVoiceTap={handleVoiceTap}
             />
 
             <div className="my-4 h-px bg-gradient-to-r from-transparent via-amber-800/30 to-transparent" />
