@@ -26,6 +26,7 @@ import MyMixesPanel from "@/components/MyMixesPanel";
 import RecentlyPlayedPanel from "@/components/RecentlyPlayedPanel";
 import AuthControls from "@/components/AuthControls";
 import { Disc3, Settings, User, LogOut, Cloud, HardDrive, Save, ListMusic, Clock, Heart } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
   const player = useAudioPlayer();
@@ -136,6 +137,9 @@ const Index = () => {
       // Mode 2: External Discover — library exhausted, external provider not yet connected
       setAiMode("external");
       setCurrentBridge(null);
+      toast("No strong library match · External discovery not yet connected", {
+        duration: 3000,
+      });
       // Clear override before falling back to prevent infinite loop on empty library
       player.onTrackEndedOverrideRef.current = null;
       player.playNext();
