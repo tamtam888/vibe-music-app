@@ -29,7 +29,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth` },
+      options: { emailRedirectTo: "http://localhost:8080/auth" },
     });
     setLoading(false);
     if (error) {
@@ -46,7 +46,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
-        options: { emailRedirectTo: `${window.location.origin}/auth` },
+        options: { emailRedirectTo: "http://localhost:8080/auth" },
       });
       setLoading(false);
       if (error) {
