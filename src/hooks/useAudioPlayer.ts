@@ -61,6 +61,7 @@ export function useAudioPlayer() {
   const failCountRef = useRef(0);
   const shuffleRef = useRef(false);
   const shuffleOrderRef = useRef<number[]>([]);
+  const volumeRef = useRef(0.7);
 
   // Refs to hold current values for the audio event handlers
   const playlistRef = useRef<Track[]>([]);
@@ -79,6 +80,7 @@ export function useAudioPlayer() {
     if (!audio) return;
     audio.pause();
     audio.src = track.url;
+    audio.volume = volumeRef.current; // re-apply before load — some browsers reset volume on src change
     audio.load();
     audio.play().then(() => {
       setIsPlaying(true);
@@ -86,7 +88,9 @@ export function useAudioPlayer() {
       setNeedsResume(false);
       failCountRef.current = 0;
       setMediaSessionState("playing");
-    }).catch(() => {
+    }).catch((err: unknown) => {
+      // AbortError means this play() was interrupted by the next loadAndPlay call — safe to ignore
+      if ((err as DOMException)?.name === "AbortError") return;
       console.warn("Playback failed for", track.title);
       setIsPlaying(false);
       setMediaSessionState("paused");
@@ -131,9 +135,12 @@ export function useAudioPlayer() {
     handleTrackEnded();
   }, [handleTrackEnded]);
 
+  // Set initial volume once on mount — volume changes are handled directly in changeVolume
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { audioRef.current.volume = volumeRef.current; }, []);
+
   useEffect(() => {
     const audio = audioRef.current;
-    audio.volume = volume;
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration);
@@ -213,6 +220,7 @@ export function useAudioPlayer() {
   }, []);
 
   const changeVolume = useCallback((v: number) => {
+    volumeRef.current = v;
     setVolume(v);
     if (audioRef.current) audioRef.current.volume = v;
   }, []);
