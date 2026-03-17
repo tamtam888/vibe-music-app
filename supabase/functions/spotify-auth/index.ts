@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("[spotify-auth] Exchanging code for user:", user.id, "redirect_uri:", redirect_uri);
 
     // Exchange code for tokens
     const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
 
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok) {
+      console.error("[spotify-auth] Token exchange failed:", JSON.stringify(tokenData));
       return new Response(
         JSON.stringify({ error: "Spotify token exchange failed", details: tokenData }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -112,6 +114,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    console.log("[spotify-auth] Successfully connected Spotify user:", profile.id);
     return new Response(
       JSON.stringify({
         spotify_user_id: profile.id,

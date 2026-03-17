@@ -170,9 +170,9 @@ const Index = () => {
     isGeneratingRef.current = false;
     toast(
       generationProvider.isConfigured
-        ? "Generation failed · Check your provider configuration"
-        : "No library match · Add more tracks or configure a generation provider",
-      { duration: 4000 }
+        ? "AI Radio · generation failed — playing next normally"
+        : "AI Radio · library exhausted — add more tracks or configure a generation provider",
+      { duration: 5000 }
     );
     // Clear override to prevent infinite loop on empty library
     player.onTrackEndedOverrideRef.current = null;
@@ -191,8 +191,9 @@ const Index = () => {
       if (ownerVibe) setActivePlaylist(ownerVibe);
       player.startPlaylist([nextTrack], 0);
     } else {
-      // Library empty — clear override and stop
+      // Library empty — clear override and fall back to normal advance
       player.onTrackEndedOverrideRef.current = null;
+      toast("Beat Match · no other tracks in library — playing next normally", { duration: 4000 });
       player.playNext();
     }
   }, [beatMatchEnabled, player, beatMatch, library.vibes, playedTracks]);
@@ -495,6 +496,14 @@ const Index = () => {
                 if (enabling) {
                   setBeatMatchEnabled(false); // mutually exclusive with Beat Match
                   resetFlow();
+                  const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
+                  if (totalTracks <= 1) {
+                    toast("AI Radio on · add more tracks for smart matching to work", { duration: 4000 });
+                  } else {
+                    toast("AI Radio on · next track will be matched by energy & mood", { duration: 3000 });
+                  }
+                } else {
+                  toast("AI Radio off", { duration: 2000 });
                 }
                 setCurrentBridge(null);
                 setAiMode(null);
@@ -509,6 +518,14 @@ const Index = () => {
                   setCurrentBridge(null);
                   setAiMode(null);
                   resetFlow();
+                  const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
+                  if (totalTracks <= 1) {
+                    toast("Beat Match on · add more tracks for BPM matching to work", { duration: 4000 });
+                  } else {
+                    toast("Beat Match on · next track will be picked by closest BPM", { duration: 3000 });
+                  }
+                } else {
+                  toast("Beat Match off", { duration: 2000 });
                 }
               }}
               onNext={effectiveNext}
