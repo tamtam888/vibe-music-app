@@ -4,6 +4,7 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Playlist, Track } from "@/data/playlists";
 import { useVibeLibrary } from "@/hooks/useVibeLibrary";
 import { useAIFlow, AIFlowQueueItem } from "@/hooks/useAIFlow";
+import { useBeatMatch } from "@/hooks/useBeatMatch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -32,6 +33,7 @@ const Index = () => {
   const player = useAudioPlayer();
   const library = useVibeLibrary();
   const { buildNextTrack, resetFlow } = useAIFlow();
+  const beatMatch = useBeatMatch();
   const { user, signOut } = useAuth();
   const { t, lang, setLang } = useLanguage();
   const { theme, setTheme } = useTheme();
@@ -43,6 +45,7 @@ const Index = () => {
   const [openVibeNew, setOpenVibeNew] = useState(false);
   const [source, setSource] = useState<"mp3" | "spotify">("mp3");
   const [aiFlowEnabled, setAiFlowEnabled] = useState(false);
+  const [beatMatchEnabled, setBeatMatchEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
   const [aiMode, setAiMode] = useState<"library" | "external" | null>(null);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
@@ -146,18 +149,44 @@ const Index = () => {
     }
   }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks, favorites.favoriteIds]);
 
-  // Wire AI Radio override into the audio player's track-ended handler
-  useEffect(() => {
-    player.onTrackEndedOverrideRef.current = aiFlowEnabled ? handleAIFlowNext : null;
-  }, [aiFlowEnabled, handleAIFlowNext]);
+  const handleBeatMatchNext = useCallback(() => {
+    if (!beatMatchEnabled || !player.currentTrack) {
+      player.onTrackEndedOverrideRef.current = null;
+      player.playNext();
+      return;
+    }
+    const nextTrack = beatMatch.buildNextTrack(player.currentTrack, library.vibes, playedTracks);
+    if (nextTrack) {
+      const ownerVibe = library.vibes.find((v) => v.tracks.some((t) => t.id === nextTrack.id));
+      if (ownerVibe) setActivePlaylist(ownerVibe);
+      player.startPlaylist([nextTrack], 0);
+    } else {
+      // Library empty — clear override and stop
+      player.onTrackEndedOverrideRef.current = null;
+      player.playNext();
+    }
+  }, [beatMatchEnabled, player, beatMatch, library.vibes, playedTracks]);
 
-  const effectiveNext = aiFlowEnabled ? handleAIFlowNext : player.playNext;
+  // Consolidated override: AI Radio takes priority, then Beat Match, then normal advance
+  useEffect(() => {
+    if (aiFlowEnabled) {
+      player.onTrackEndedOverrideRef.current = handleAIFlowNext;
+    } else if (beatMatchEnabled) {
+      player.onTrackEndedOverrideRef.current = handleBeatMatchNext;
+    } else {
+      player.onTrackEndedOverrideRef.current = null;
+    }
+  }, [aiFlowEnabled, beatMatchEnabled, handleAIFlowNext, handleBeatMatchNext]);
+
+  const effectiveNext = aiFlowEnabled ? handleAIFlowNext : beatMatchEnabled ? handleBeatMatchNext : player.playNext;
 
   // ── Voice command handler ────────────────────────────────────────────────────
   const handleVoiceResult = useCallback((transcript: string) => {
     const cmd = transcript.toLowerCase().trim();
     if (cmd.includes("next")) {
-      if (aiFlowEnabled) handleAIFlowNext(); else player.playNext();
+      if (aiFlowEnabled) handleAIFlowNext();
+      else if (beatMatchEnabled) handleBeatMatchNext();
+      else player.playNext();
     } else if (cmd.includes("previous") || cmd.includes("prev") || cmd.includes("back")) {
       player.playPrev();
     } else if (cmd.includes("pause") || cmd.includes("stop")) {
@@ -169,7 +198,7 @@ const Index = () => {
     } else if (cmd.includes("volume down") || cmd.includes("quieter") || cmd.includes("softer")) {
       player.changeVolume(Math.max(player.volume - 0.2, 0));
     }
-  }, [aiFlowEnabled, handleAIFlowNext, player]);
+  }, [aiFlowEnabled, beatMatchEnabled, handleAIFlowNext, handleBeatMatchNext, player]);
 
   const voice = useVoiceInput(handleVoiceResult, lang === "he" ? "he-IL" : "en-US");
 
@@ -420,10 +449,26 @@ const Index = () => {
               onTogglePlay={player.togglePlay}
               onToggleShuffle={player.toggleShuffle}
               onToggleAIFlow={() => {
-                setAiFlowEnabled((v) => !v);
-                if (!aiFlowEnabled) resetFlow();
+                const enabling = !aiFlowEnabled;
+                setAiFlowEnabled(enabling);
+                if (enabling) {
+                  setBeatMatchEnabled(false); // mutually exclusive with Beat Match
+                  resetFlow();
+                }
                 setCurrentBridge(null);
                 setAiMode(null);
+              }}
+              beatMatch={beatMatchEnabled}
+              onToggleBeatMatch={() => {
+                const enabling = !beatMatchEnabled;
+                setBeatMatchEnabled(enabling);
+                if (enabling) {
+                  // Mutually exclusive with AI Radio
+                  setAiFlowEnabled(false);
+                  setCurrentBridge(null);
+                  setAiMode(null);
+                  resetFlow();
+                }
               }}
               onNext={effectiveNext}
               onPrev={player.playPrev}

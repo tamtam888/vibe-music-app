@@ -1,4 +1,4 @@
-import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap, Mic, MicOff } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap, Waves, Mic, MicOff } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface PlayerControlsProps {
@@ -9,9 +9,11 @@ interface PlayerControlsProps {
   volume: number;
   shuffle: boolean;
   aiFlow: boolean;
+  beatMatch: boolean;
   onTogglePlay: () => void;
   onToggleShuffle: () => void;
   onToggleAIFlow: () => void;
+  onToggleBeatMatch: () => void;
   onNext: () => void;
   onPrev: () => void;
   onSeek: (time: number) => void;
@@ -36,9 +38,11 @@ const PlayerControls = ({
   volume,
   shuffle,
   aiFlow,
+  beatMatch,
   onTogglePlay,
   onToggleShuffle,
   onToggleAIFlow,
+  onToggleBeatMatch,
   onNext,
   onPrev,
   onSeek,
@@ -127,6 +131,15 @@ const PlayerControls = ({
             aria-pressed={aiFlow}
           >
             <Zap size={16} />
+          </button>
+          <button
+            onClick={onToggleBeatMatch}
+            className={`p-2 rounded-full transition-all ${beatMatch ? "text-purple-300 bg-purple-800/50" : "text-amber-500/40 hover:text-amber-400 hover:bg-amber-900/30"}`}
+            aria-label={beatMatch ? "Beat Match Active" : "Beat Match"}
+            aria-pressed={beatMatch}
+            title="Beat Match — picks next track by closest BPM (metadata-based)"
+          >
+            <Waves size={16} />
           </button>
           {voiceSupported && onVoiceTap && (
             <button
