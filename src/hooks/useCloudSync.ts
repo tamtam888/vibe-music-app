@@ -62,13 +62,13 @@ export function useCloudSync({
             mood: (ct.mood as Track["mood"]) ?? undefined,
             texture: (ct.texture as Track["texture"]) ?? undefined,
             isBridge: ct.is_bridge ?? undefined,
-            source: (ct as any).source ?? undefined,
-            spotify_url: (ct as any).spotify_url ?? undefined,
-            spotify_id: (ct as any).spotify_id ?? undefined,
-            item_type: (ct as any).item_type ?? undefined,
-            subtitle: (ct as any).subtitle ?? undefined,
-            image: (ct as any).image ?? undefined,
-            metadata_fetched_at: (ct as any).metadata_fetched_at ?? undefined,
+            source: (ct.source as Track["source"]) ?? undefined,
+            spotify_url: ct.spotify_url ?? undefined,
+            spotify_id: ct.spotify_id ?? undefined,
+            item_type: (ct.item_type as Track["item_type"]) ?? undefined,
+            subtitle: ct.subtitle ?? undefined,
+            image: ct.image ?? undefined,
+            metadata_fetched_at: ct.metadata_fetched_at ?? undefined,
           });
         });
 
