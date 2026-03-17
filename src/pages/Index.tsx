@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Playlist, Track } from "@/data/playlists";
 import { useVibeLibrary } from "@/hooks/useVibeLibrary";
 import { useAIFlow, AIFlowQueueItem } from "@/hooks/useAIFlow";
 import { useBeatMatch } from "@/hooks/useBeatMatch";
+import { useGenerationProvider, buildGenerationContext } from "@/hooks/useGenerationProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -34,6 +35,7 @@ const Index = () => {
   const library = useVibeLibrary();
   const { buildNextTrack, resetFlow } = useAIFlow();
   const beatMatch = useBeatMatch();
+  const generationProvider = useGenerationProvider();
   const { user, signOut } = useAuth();
   const { t, lang, setLang } = useLanguage();
   const { theme, setTheme } = useTheme();
@@ -47,7 +49,8 @@ const Index = () => {
   const [aiFlowEnabled, setAiFlowEnabled] = useState(false);
   const [beatMatchEnabled, setBeatMatchEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
-  const [aiMode, setAiMode] = useState<"library" | "external" | null>(null);
+  const [aiMode, setAiMode] = useState<"library" | "external" | "generating" | "generation-unavailable" | null>(null);
+  const isGeneratingRef = useRef(false);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
   const [showMyMixes, setShowMyMixes] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
@@ -117,7 +120,7 @@ const Index = () => {
     [player, resetFlow]
   );
 
-  const handleAIFlowNext = useCallback(() => {
+  const handleAIFlowNext = useCallback(async () => {
     if (!aiFlowEnabled || !player.currentTrack) {
       setCurrentBridge(null);
       setAiMode(null);
@@ -126,9 +129,13 @@ const Index = () => {
       player.playNext();
       return;
     }
+
+    // Guard: don't start a new cycle while generation is already in progress
+    if (isGeneratingRef.current) return;
+
+    // ── Mode 1: Library Match ──────────────────────────────────────────────
     const result = buildNextTrack(player.currentTrack, library.vibes, playedTracks, favorites.favoriteIds);
     if (result) {
-      // Mode 1: Library Match — a scored track was found in the user's library
       setAiMode("library");
       setCurrentBridge(result);
       const ownerVibe = library.vibes.find((v) =>
@@ -136,18 +143,41 @@ const Index = () => {
       );
       if (ownerVibe) setActivePlaylist(ownerVibe);
       player.startPlaylist([result.track], 0);
-    } else {
-      // Mode 2: External Discover — library exhausted, external provider not yet connected
-      setAiMode("external");
-      setCurrentBridge(null);
-      toast("No strong library match · External discovery not yet connected", {
-        duration: 3000,
-      });
-      // Clear override before falling back to prevent infinite loop on empty library
-      player.onTrackEndedOverrideRef.current = null;
-      player.playNext();
+      return;
     }
-  }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks, favorites.favoriteIds]);
+
+    // ── Mode 2: AI Generation (library exhausted) ──────────────────────────
+    setCurrentBridge(null);
+    if (generationProvider.isConfigured) {
+      setAiMode("generating");
+      isGeneratingRef.current = true;
+      const context = buildGenerationContext(player.currentTrack, library.vibes);
+      const generated = await generationProvider.generate(context);
+      isGeneratingRef.current = false;
+      if (generated) {
+        setAiMode("library");
+        const ownerVibe = library.vibes.find((v) =>
+          v.tracks.some((t) => t.id === generated.id)
+        );
+        if (ownerVibe) setActivePlaylist(ownerVibe);
+        player.startPlaylist([generated], 0);
+        return;
+      }
+    }
+
+    // ── Mode 3: All paths exhausted ────────────────────────────────────────
+    setAiMode("generation-unavailable");
+    isGeneratingRef.current = false;
+    toast(
+      generationProvider.isConfigured
+        ? "Generation failed · Check your provider configuration"
+        : "No library match · Add more tracks or configure a generation provider",
+      { duration: 4000 }
+    );
+    // Clear override to prevent infinite loop on empty library
+    player.onTrackEndedOverrideRef.current = null;
+    player.playNext();
+  }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks, favorites.favoriteIds, generationProvider]);
 
   const handleBeatMatchNext = useCallback(() => {
     if (!beatMatchEnabled || !player.currentTrack) {
@@ -380,17 +410,28 @@ const Index = () => {
             {aiFlowEnabled && player.currentTrack && (
               <div className="text-center mb-1">
                 <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border ${
-                  aiMode === "external"
+                  aiMode === "external" || aiMode === "generation-unavailable"
                     ? "bg-amber-900/40 text-amber-400/90 border-amber-700/30"
-                    : "bg-emerald-900/40 text-emerald-400/90 border-emerald-700/30"
+                    : aiMode === "generating"
+                      ? "bg-indigo-900/40 text-indigo-400/90 border-indigo-700/30"
+                      : "bg-emerald-900/40 text-emerald-400/90 border-emerald-700/30"
                 }`}>
                   {t("aiFlowActive")}
                 </span>
                 {aiMode && (
                   <p className={`text-[9px] mt-0.5 tracking-wider ${
-                    aiMode === "external" ? "text-amber-500/60" : "text-emerald-500/60"
+                    aiMode === "external" || aiMode === "generation-unavailable"
+                      ? "text-amber-500/60"
+                      : aiMode === "generating"
+                        ? "text-indigo-400/70"
+                        : "text-emerald-500/60"
                   }`}>
-                    {t(aiMode === "library" ? "aiModeLibrary" : "aiModeExternal")}
+                    {t(
+                      aiMode === "library"                ? "aiModeLibrary" :
+                      aiMode === "generating"             ? "aiModeGenerating" :
+                      aiMode === "generation-unavailable" ? "aiModeGenerationUnavailable" :
+                                                            "aiModeExternal"
+                    )}
                   </p>
                 )}
                 {aiMode === "library" && currentBridge && !currentBridge.isBridge && (
