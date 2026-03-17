@@ -122,7 +122,7 @@ const Index = () => {
       player.playNext();
       return;
     }
-    const result = buildNextTrack(player.currentTrack, library.vibes, playedTracks);
+    const result = buildNextTrack(player.currentTrack, library.vibes, playedTracks, favorites.favoriteIds);
     if (result) {
       // Mode 1: Library Match — a scored track was found in the user's library
       setAiMode("library");
@@ -140,7 +140,7 @@ const Index = () => {
       player.onTrackEndedOverrideRef.current = null;
       player.playNext();
     }
-  }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks]);
+  }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks, favorites.favoriteIds]);
 
   // Wire AI Radio override into the audio player's track-ended handler
   useEffect(() => {
@@ -358,6 +358,11 @@ const Index = () => {
                     aiMode === "external" ? "text-amber-500/60" : "text-emerald-500/60"
                   }`}>
                     {t(aiMode === "library" ? "aiModeLibrary" : "aiModeExternal")}
+                  </p>
+                )}
+                {aiMode === "library" && currentBridge && !currentBridge.isBridge && (
+                  <p className="text-[9px] text-emerald-400/40 mt-0.5 tracking-wide">
+                    {currentBridge.matchReason}
                   </p>
                 )}
                 {currentBridge?.isBridge && (
