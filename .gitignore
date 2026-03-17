@@ -19,6 +19,9 @@ build
 .env.*
 !.env.example
 
+# Claude Code local config
+.claude/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
