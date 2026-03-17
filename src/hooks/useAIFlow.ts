@@ -38,8 +38,10 @@ export function useAIFlow() {
       const currentTexture = getTrackTexture(currentTrack, currentVibeId);
       const currentBpm     = currentTrack.bpm ?? null;
 
-      // Build set of recently played track IDs (last 30) to avoid repeats
-      const recentIds = new Set(recentlyPlayed.slice(0, 30).map((t) => t.id));
+      // Tiered recency windows — slice(-N) takes the N most recently played tracks
+      // (playedTracks grows newest-last, so slice(0, N) would penalise the wrong end).
+      const veryRecentIds = new Set(recentlyPlayed.slice(-5).map((t) => t.id));
+      const recentIds     = new Set(recentlyPlayed.slice(-30).map((t) => t.id));
 
       // Gather all candidate tracks (bridge-only classical tracks are separated)
       const allTracks: { track: Track; vibeId: string }[] = [];
@@ -57,10 +59,13 @@ export function useAIFlow() {
 
       if (allTracks.length === 0) return null;
 
-      // Bridge needed after 3+ non-bridge tracks with a large energy jump
+      // Bridge needed after 3+ non-bridge tracks with a large energy jump.
+      // Only fire when coming FROM higher energy — classical bridges calm things
+      // down; they should not precede an upward energy transition.
       const needsBridge =
         sinceLastBridgeRef.current >= 3 &&
-        bridgeTracks.length > 0;
+        bridgeTracks.length > 0 &&
+        currentEnergy >= 5;
 
       // ── Score every non-bridge candidate ──────────────────────────────────────
       const scored = allTracks
@@ -81,14 +86,16 @@ export function useAIFlow() {
           score -= energyDiff * 12;
           if (energyDiff <= 1) reasons.push("Energy flow");
 
-          // ── BPM proximity (real data — every built-in track has bpm) ────────
+          // ── BPM proximity ────────────────────────────────────────────────────
           if (track.bpm != null && currentBpm != null) {
+            const bpmDiff = Math.abs(track.bpm - currentBpm);
             // Gentle per-unit penalty so small differences matter little
-            score -= Math.abs(track.bpm - currentBpm) * 0.3;
+            score -= bpmDiff * 0.3;
             // Bonus for matching tempo band (slow / medium / fast)
             if (bpmBand(track.bpm) === bpmBand(currentBpm)) {
               score += 10;
-              if (Math.abs(track.bpm - currentBpm) < 15) reasons.push("Tempo");
+              // Show actual BPM in the match reason when close enough to be meaningful
+              if (bpmDiff < 15) reasons.push(`${track.bpm} BPM`);
             }
           }
 
@@ -104,8 +111,17 @@ export function useAIFlow() {
             reasons.push("Texture");
           }
 
-          // ── Recently played penalty — strongly avoid repeats ─────────────────
-          if (recentIds.has(track.id)) score -= 60;
+          // ── Same-vibe soft gravity ───────────────────────────────────────────
+          // Gentle pull toward the current vibe so sessions feel coherent without
+          // locking the algorithm into one vibe indefinitely.
+          if (currentVibeId && vibeId === currentVibeId) {
+            score += 8;
+            if (reasons.length === 0) reasons.push("Vibe");
+          }
+
+          // ── Tiered recency penalty — strongly avoid recent repeats ───────────
+          if (veryRecentIds.has(track.id)) score -= 80;
+          else if (recentIds.has(track.id)) score -= 60;
 
           // ── Favorites bonus ─────────────────────────────────────────────────
           if (favoritedIds.has(track.id)) {
@@ -118,8 +134,8 @@ export function useAIFlow() {
             if (energy < currentEnergy && energy >= currentEnergy - 3) score += 8;
           }
 
-          // ── Tiebreaker — small random nudge, not a dominant signal ──────────
-          score += Math.random() * 8;
+          // ── Tiebreaker — kept small so it never overrides real signal ────────
+          score += Math.random() * 4;
 
           const matchReason = reasons.length > 0
             ? reasons.join(" · ")
@@ -131,7 +147,7 @@ export function useAIFlow() {
 
       const bestCandidate = scored[0];
 
-      // Insert a classical bridge if energy jump is large and we've played enough
+      // Insert a classical bridge if energy jump is large and we've played enough.
       if (needsBridge && bestCandidate && bestCandidate.energyDiff >= 4) {
         const bridge = bridgeTracks[Math.floor(Math.random() * bridgeTracks.length)];
         sinceLastBridgeRef.current = 0;

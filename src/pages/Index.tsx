@@ -50,6 +50,7 @@ const Index = () => {
   const [beatMatchEnabled, setBeatMatchEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
   const [aiMode, setAiMode] = useState<"library" | "external" | "generating" | "generation-unavailable" | null>(null);
+  const [beatMatchReason, setBeatMatchReason] = useState<string | null>(null);
   const isGeneratingRef = useRef(false);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
   const [showMyMixes, setShowMyMixes] = useState(false);
@@ -151,23 +152,27 @@ const Index = () => {
     if (generationProvider.isConfigured) {
       setAiMode("generating");
       isGeneratingRef.current = true;
-      const context = buildGenerationContext(player.currentTrack, library.vibes);
-      const generated = await generationProvider.generate(context);
-      isGeneratingRef.current = false;
-      if (generated) {
-        setAiMode("library");
-        const ownerVibe = library.vibes.find((v) =>
-          v.tracks.some((t) => t.id === generated.id)
-        );
-        if (ownerVibe) setActivePlaylist(ownerVibe);
-        player.startPlaylist([generated], 0);
-        return;
+      try {
+        const context = buildGenerationContext(player.currentTrack, library.vibes);
+        const generated = await generationProvider.generate(context);
+        if (generated) {
+          setAiMode("library");
+          const ownerVibe = library.vibes.find((v) =>
+            v.tracks.some((t) => t.id === generated.id)
+          );
+          if (ownerVibe) setActivePlaylist(ownerVibe);
+          player.startPlaylist([generated], 0);
+          return;
+        }
+      } catch (e) {
+        console.error("[AI Radio] Generation failed:", e);
+      } finally {
+        isGeneratingRef.current = false;
       }
     }
 
     // ── Mode 3: All paths exhausted ────────────────────────────────────────
     setAiMode("generation-unavailable");
-    isGeneratingRef.current = false;
     toast(
       generationProvider.isConfigured
         ? "AI Radio · generation failed — playing next normally"
@@ -185,11 +190,12 @@ const Index = () => {
       player.playNext();
       return;
     }
-    const nextTrack = beatMatch.buildNextTrack(player.currentTrack, library.vibes, playedTracks);
-    if (nextTrack) {
-      const ownerVibe = library.vibes.find((v) => v.tracks.some((t) => t.id === nextTrack.id));
+    const result = beatMatch.buildNextTrack(player.currentTrack, library.vibes, playedTracks);
+    if (result) {
+      setBeatMatchReason(result.matchReason);
+      const ownerVibe = library.vibes.find((v) => v.tracks.some((t) => t.id === result.track.id));
       if (ownerVibe) setActivePlaylist(ownerVibe);
-      player.startPlaylist([nextTrack], 0);
+      player.startPlaylist([result.track], 0);
     } else {
       // Library empty — clear override and fall back to normal advance
       player.onTrackEndedOverrideRef.current = null;
@@ -448,6 +454,25 @@ const Index = () => {
               </div>
             )}
 
+            {/* ── Beat Match status badge ───────────────────────────────────────── */}
+            {beatMatchEnabled && !aiFlowEnabled && player.currentTrack && (
+              <div className="text-center mb-1">
+                <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border bg-purple-900/40 text-purple-300/90 border-purple-700/30">
+                  Beat Match Active
+                </span>
+                {player.currentTrack.bpm && (
+                  <p className="text-[9px] mt-0.5 tracking-wider text-purple-400/60">
+                    {player.currentTrack.bpm} BPM
+                  </p>
+                )}
+                {beatMatchReason && (
+                  <p className="text-[9px] text-purple-400/40 mt-0.5 tracking-wide">
+                    {beatMatchReason}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* ── Now playing: title + artist + favourite ──────────────────────── */}
             {player.allFailed ? (
               <div className="text-center mb-4 px-4 py-3 rounded-lg bg-red-950/30 border border-red-900/30">
@@ -495,6 +520,7 @@ const Index = () => {
                 setAiFlowEnabled(enabling);
                 if (enabling) {
                   setBeatMatchEnabled(false); // mutually exclusive with Beat Match
+                  setBeatMatchReason(null);
                   resetFlow();
                   const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
                   if (totalTracks <= 1) {
@@ -517,6 +543,7 @@ const Index = () => {
                   setAiFlowEnabled(false);
                   setCurrentBridge(null);
                   setAiMode(null);
+                  setBeatMatchReason(null);
                   resetFlow();
                   const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
                   if (totalTracks <= 1) {
@@ -525,6 +552,7 @@ const Index = () => {
                     toast("Beat Match on · next track will be picked by closest BPM", { duration: 3000 });
                   }
                 } else {
+                  setBeatMatchReason(null);
                   toast("Beat Match off", { duration: 2000 });
                 }
               }}

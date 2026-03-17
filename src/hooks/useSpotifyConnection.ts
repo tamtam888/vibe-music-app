@@ -78,47 +78,51 @@ export function useSpotifyConnection(user: User | null) {
     }
 
     const code = url.searchParams.get("code");
-    if (code && state === "spotify_connect") {
-      // Clean URL immediately to prevent re-processing on re-render
-      url.searchParams.delete("code");
-      url.searchParams.delete("state");
-      window.history.replaceState({}, "", url.pathname + url.search);
+    if (!(code && state === "spotify_connect")) return;
 
-      setConnecting(true);
-      const redirectUri = window.location.origin;
-      supabase.functions
-        .invoke("spotify-auth", {
-          body: { code, redirect_uri: redirectUri },
-        })
-        .then(async ({ data, error }) => {
-          setConnecting(false);
-          if (error) {
-            let detail = "";
-            try {
-              const body = await (error as any).context?.json?.();
-              detail = body?.error ?? "";
-            } catch { /* ignore parse errors */ }
-            console.error("[Spotify] Auth failed:", detail || error.message);
-            if (detail === "Spotify credentials not configured") {
-              toast.error("Spotify not configured on the server — contact the app owner.");
-            } else if (detail === "Spotify token exchange failed") {
-              toast.error("OAuth failed — verify the redirect URI is registered in your Spotify app settings.");
-            } else if (detail === "Missing authorization") {
-              toast.error("Not signed in — please sign in before connecting Spotify.");
-            } else {
-              toast.error("Spotify connection failed. Please try again.");
-            }
-            return;
+    // Clean URL immediately to prevent re-processing on re-render
+    url.searchParams.delete("code");
+    url.searchParams.delete("state");
+    window.history.replaceState({}, "", url.pathname + url.search);
+
+    let cancelled = false;
+    setConnecting(true);
+    const redirectUri = window.location.origin;
+    supabase.functions
+      .invoke("spotify-auth", {
+        body: { code, redirect_uri: redirectUri },
+      })
+      .then(async ({ data, error }) => {
+        if (cancelled) return;
+        setConnecting(false);
+        if (error) {
+          let detail = "";
+          try {
+            const body = await (error as any).context?.json?.();
+            detail = body?.error ?? "";
+          } catch { /* ignore parse errors */ }
+          console.error("[Spotify] Auth failed:", detail || error.message);
+          if (detail === "Spotify credentials not configured") {
+            toast.error("Spotify not configured on the server — contact the app owner.");
+          } else if (detail === "Spotify token exchange failed") {
+            toast.error("OAuth failed — verify the redirect URI is registered in your Spotify app settings.");
+          } else if (detail === "Missing authorization") {
+            toast.error("Not signed in — please sign in before connecting Spotify.");
+          } else {
+            toast.error("Spotify connection failed. Please try again.");
           }
-          if (data) {
-            setProfile({
-              spotify_user_id: data.spotify_user_id,
-              display_name: data.display_name,
-              profile_image: data.profile_image,
-            });
-          }
-        });
-    }
+          return;
+        }
+        if (data) {
+          setProfile({
+            spotify_user_id: data.spotify_user_id,
+            display_name: data.display_name,
+            profile_image: data.profile_image,
+          });
+          toast.success(`Connected as ${data.display_name || "Spotify user"}`);
+        }
+      });
+    return () => { cancelled = true; };
   }, [user]);
 
   // Disconnect
