@@ -8,6 +8,8 @@ interface SourceToggleProps {
   onSourceChange: (source: "mp3" | "spotify") => void;
   spotifyProfile?: SpotifyProfile | null;
   spotifyConnecting?: boolean;
+  /** Whether VITE_SPOTIFY_CLIENT_ID is set. When false, button is dimmed and shows a setup tooltip. */
+  spotifyConfigured?: boolean;
   onSpotifyConnect?: () => void;
   onSpotifyDisconnect?: () => void;
 }
@@ -17,6 +19,7 @@ const SourceToggle = ({
   onSourceChange,
   spotifyProfile,
   spotifyConnecting,
+  spotifyConfigured = true,
   onSpotifyConnect,
   onSpotifyDisconnect,
 }: SourceToggleProps) => {
@@ -55,8 +58,12 @@ const SourceToggle = ({
               onSourceChange("spotify");
             }
           }}
-          className="px-3 py-1 rounded-r-lg text-[10px] font-bold uppercase tracking-wider transition-all border flex items-center gap-1"
+          className={cn(
+            "px-3 py-1 rounded-r-lg text-[10px] font-bold uppercase tracking-wider transition-all border flex items-center gap-1",
+            !spotifyConfigured && "opacity-50"
+          )}
           style={isSpotifyOn ? spotifyActive : inactiveStyle}
+          title={!spotifyConfigured ? "Spotify not configured — add VITE_SPOTIFY_CLIENT_ID to .env" : undefined}
         >
           {spotifyConnecting ? (
             <Loader2 size={10} className="animate-spin" />

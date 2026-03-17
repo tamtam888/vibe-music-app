@@ -75,6 +75,7 @@ export function useSpotifyConnection(user: User | null) {
         .then(({ data, error }) => {
           if (error) {
             console.error("Spotify auth error:", error);
+            toast.error("Spotify connection failed. Please try again.");
           } else if (data) {
             setProfile({
               spotify_user_id: data.spotify_user_id,

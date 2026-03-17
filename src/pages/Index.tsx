@@ -488,6 +488,7 @@ const Index = () => {
                 onSourceChange={setSource}
                 spotifyProfile={spotify.profile}
                 spotifyConnecting={spotify.connecting}
+                spotifyConfigured={!!import.meta.env.VITE_SPOTIFY_CLIENT_ID}
                 onSpotifyConnect={() => {
                   if (!user) { navigate("/auth"); return; }
                   spotify.connect();
