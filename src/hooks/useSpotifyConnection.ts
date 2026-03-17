@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 const SPOTIFY_SCOPES = "user-read-private user-read-email playlist-read-private";
@@ -38,7 +39,7 @@ export function useSpotifyConnection(user: User | null) {
   const connect = useCallback(() => {
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     if (!clientId) {
-      console.error("VITE_SPOTIFY_CLIENT_ID not set");
+      toast.error("Spotify is not configured. Add VITE_SPOTIFY_CLIENT_ID to your .env file.");
       return;
     }
     const redirectUri = `${window.location.origin}`;
