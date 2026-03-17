@@ -43,6 +43,7 @@ const Index = () => {
   const [source, setSource] = useState<"mp3" | "spotify">("mp3");
   const [aiFlowEnabled, setAiFlowEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
+  const [aiMode, setAiMode] = useState<"library" | "external" | null>(null);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
   const [showMyMixes, setShowMyMixes] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
@@ -115,6 +116,7 @@ const Index = () => {
   const handleAIFlowNext = useCallback(() => {
     if (!aiFlowEnabled || !player.currentTrack) {
       setCurrentBridge(null);
+      setAiMode(null);
       // Clear override before falling back to prevent re-entering this handler
       player.onTrackEndedOverrideRef.current = null;
       player.playNext();
@@ -122,6 +124,8 @@ const Index = () => {
     }
     const result = buildNextTrack(player.currentTrack, library.vibes, playedTracks);
     if (result) {
+      // Mode 1: Library Match — a scored track was found in the user's library
+      setAiMode("library");
       setCurrentBridge(result);
       const ownerVibe = library.vibes.find((v) =>
         v.tracks.some((t) => t.id === result.track.id)
@@ -129,6 +133,8 @@ const Index = () => {
       if (ownerVibe) setActivePlaylist(ownerVibe);
       player.startPlaylist([result.track], 0);
     } else {
+      // Mode 2: External Discover — library exhausted, external provider not yet connected
+      setAiMode("external");
       setCurrentBridge(null);
       // Clear override before falling back to prevent infinite loop on empty library
       player.onTrackEndedOverrideRef.current = null;
@@ -340,9 +346,20 @@ const Index = () => {
             {/* ── AI Radio status badge ────────────────────────────────────────── */}
             {aiFlowEnabled && player.currentTrack && (
               <div className="text-center mb-1">
-                <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-900/40 text-emerald-400/90 border border-emerald-700/30">
+                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border ${
+                  aiMode === "external"
+                    ? "bg-amber-900/40 text-amber-400/90 border-amber-700/30"
+                    : "bg-emerald-900/40 text-emerald-400/90 border-emerald-700/30"
+                }`}>
                   {t("aiFlowActive")}
                 </span>
+                {aiMode && (
+                  <p className={`text-[9px] mt-0.5 tracking-wider ${
+                    aiMode === "external" ? "text-amber-500/60" : "text-emerald-500/60"
+                  }`}>
+                    {t(aiMode === "library" ? "aiModeLibrary" : "aiModeExternal")}
+                  </p>
+                )}
                 {currentBridge?.isBridge && (
                   <p className="text-[9px] text-emerald-500/60 mt-0.5 tracking-wider">
                     {t("bridgeClassical")}
@@ -397,6 +414,7 @@ const Index = () => {
                 setAiFlowEnabled((v) => !v);
                 if (!aiFlowEnabled) resetFlow();
                 setCurrentBridge(null);
+                setAiMode(null);
               }}
               onNext={effectiveNext}
               onPrev={player.playPrev}
