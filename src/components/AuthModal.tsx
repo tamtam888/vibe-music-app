@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
@@ -26,6 +26,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
   const handleMagicLink = async () => {
     if (!email.trim()) return;
+    if (!supabaseConfigured) { toast.error("Cloud auth is not configured."); return; }
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -41,6 +42,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
   const handlePasswordAuth = async () => {
     if (!email.trim() || !password.trim()) return;
+    if (!supabaseConfigured) { toast.error("Cloud auth is not configured."); return; }
     setLoading(true);
     if (mode === "signup") {
       const { error } = await supabase.auth.signUp({

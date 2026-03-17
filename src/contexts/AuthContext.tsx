@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import type { User, Session, AuthError } from "@supabase/supabase-js";
 
 /**
@@ -52,6 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let unsubscribe: () => void = () => {};
 
     const init = async () => {
+      if (!supabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+
       const remember = localStorage.getItem(REMEMBER_ME_KEY);
       const sessionAlive = sessionStorage.getItem(SESSION_ALIVE_KEY);
       // Skip the policy check when a magic-link hash is present in the URL —
@@ -94,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (email: string, password: string, rememberMe: boolean): Promise<AuthError | null> => {
+      if (!supabaseConfigured) return null;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (!error) {
         localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? "true" : "false");
@@ -110,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback(
     async (email: string, password: string): Promise<AuthError | null> => {
+      if (!supabaseConfigured) return null;
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -122,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendMagicLink = useCallback(
     async (email: string): Promise<AuthError | null> => {
+      if (!supabaseConfigured) return null;
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: "http://localhost:8080/auth" },
@@ -134,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     localStorage.removeItem(REMEMBER_ME_KEY);
     sessionStorage.removeItem(SESSION_ALIVE_KEY);
-    await supabase.auth.signOut();
+    if (supabaseConfigured) await supabase.auth.signOut();
   }, []);
 
   return (
