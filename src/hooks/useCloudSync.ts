@@ -258,6 +258,7 @@ export function useCloudSync({
             })
           );
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 }

@@ -105,6 +105,8 @@ const Index = () => {
     (pl: Playlist) => {
       setActivePlaylist(pl);
       setCurrentBridge(null);
+      setAiMode(null);
+      setBeatMatchReason(null);
       resetFlow();
       player.startPlaylist(pl.tracks, 0);
     },
@@ -115,6 +117,8 @@ const Index = () => {
     (pl: Playlist, index: number) => {
       setActivePlaylist(pl);
       setCurrentBridge(null);
+      setAiMode(null);
+      setBeatMatchReason(null);
       resetFlow();
       player.startPlaylist(pl.tracks, index);
     },
@@ -134,14 +138,45 @@ const Index = () => {
     // Guard: don't start a new cycle while generation is already in progress
     if (isGeneratingRef.current) return;
 
-    // ── Mode 1: Library Match ──────────────────────────────────────────────
-    const result = buildNextTrack(player.currentTrack, library.vibes, playedTracks, favorites.favoriteIds);
+    // ── Mode 1: Library Match — same-vibe first ───────────────────────────
+    // Identify the vibe that owns the current track so we can prefer it.
+    const currentVibe = library.vibes.find((v) =>
+      v.tracks.some((t) => t.id === player.currentTrack!.id)
+    ) ?? null;
+
+    // Pass 1: restrict candidates to the current vibe only.
+    // This keeps the session coherent — genre/mood stays consistent by default.
+    let result = buildNextTrack(
+      player.currentTrack,
+      currentVibe ? [currentVibe] : library.vibes,
+      playedTracks,
+      favorites.favoriteIds
+    );
+    let crossedVibe = false;
+
+    // Pass 2: if no in-vibe candidate available (all exhausted by recency),
+    // widen to the full library and flag that we crossed.
+    if (!result) {
+      result = buildNextTrack(player.currentTrack, library.vibes, playedTracks, favorites.favoriteIds);
+      if (result) crossedVibe = true;
+    }
+
     if (result) {
       setAiMode("library");
-      setCurrentBridge(result);
       const ownerVibe = library.vibes.find((v) =>
-        v.tracks.some((t) => t.id === result.track.id)
+        v.tracks.some((t) => t.id === result!.track.id)
       );
+      // Prefix reason with vibe context so the badge shows where the track came from.
+      // "Vibe" as a solo fallback reason is redundant once the vibe name is the prefix —
+      // replace it with a more descriptive label.
+      const baseReason = !crossedVibe && result.matchReason === "Vibe"
+        ? "Best match within vibe"
+        : result.matchReason;
+      const vibeLabel = crossedVibe
+        ? `↗ ${ownerVibe?.name ?? "other vibe"}`
+        : (currentVibe?.name ?? null);
+      const prefixedReason = vibeLabel ? `${vibeLabel} · ${baseReason}` : baseReason;
+      setCurrentBridge({ ...result, matchReason: prefixedReason });
       if (ownerVibe) setActivePlaylist(ownerVibe);
       player.startPlaylist([result.track], 0);
       return;
@@ -190,14 +225,40 @@ const Index = () => {
       player.playNext();
       return;
     }
-    const result = beatMatch.buildNextTrack(player.currentTrack, library.vibes, playedTracks);
+    // Same-vibe two-pass: prefer in-vibe BPM matches before crossing vibes
+    const currentVibe = library.vibes.find((v) =>
+      v.tracks.some((t) => t.id === player.currentTrack!.id)
+    ) ?? null;
+
+    let result = beatMatch.buildNextTrack(
+      player.currentTrack,
+      currentVibe ? [currentVibe] : library.vibes,
+      playedTracks
+    );
+    let crossedVibe = false;
+
+    if (!result) {
+      result = beatMatch.buildNextTrack(player.currentTrack, library.vibes, playedTracks);
+      if (result) crossedVibe = true;
+    }
+
     if (result) {
-      setBeatMatchReason(result.matchReason);
-      const ownerVibe = library.vibes.find((v) => v.tracks.some((t) => t.id === result.track.id));
+      const ownerVibe = library.vibes.find((v) => v.tracks.some((t) => t.id === result!.track.id));
+      // When not crossing vibes, useBeatMatch adds "Vibe" to every in-vibe candidate's
+      // reason (same-vibe bonus). That's redundant once the vibe name is already the prefix
+      // — strip it so the badge shows signal ("Mood · 120 BPM") not noise ("Vibe").
+      const baseReason = !crossedVibe
+        ? result.matchReason.split(" · ").filter((tok) => tok !== "Vibe").join(" · ") || "Best available match"
+        : result.matchReason;
+      const vibeLabel = crossedVibe
+        ? `↗ ${ownerVibe?.name ?? "other vibe"}`
+        : (currentVibe?.name ?? null);
+      const prefixedReason = vibeLabel ? `${vibeLabel} · ${baseReason}` : baseReason;
+      setBeatMatchReason(prefixedReason);
       if (ownerVibe) setActivePlaylist(ownerVibe);
       player.startPlaylist([result.track], 0);
     } else {
-      // Library empty — clear override and fall back to normal advance
+      // All tracks exhausted — clear override and fall back to normal advance
       player.onTrackEndedOverrideRef.current = null;
       toast("Beat Match · no other tracks in library — playing next normally", { duration: 4000 });
       player.playNext();
@@ -275,6 +336,8 @@ const Index = () => {
     setPlayedTracks([]);
     setActivePlaylist(null);
     setCurrentBridge(null);
+    setAiMode(null);
+    setBeatMatchReason(null);
     player.startPlaylist(mix.tracks, 0);
     setShowMyMixes(false);
   }, [player]);
@@ -282,6 +345,8 @@ const Index = () => {
   const handlePlayRecentTrack = useCallback((track: Track) => {
     setActivePlaylist(null);
     setCurrentBridge(null);
+    setAiMode(null);
+    setBeatMatchReason(null);
     player.startPlaylist([track], 0);
   }, [player]);
 
@@ -425,7 +490,8 @@ const Index = () => {
                 }`}>
                   {t("aiFlowActive")}
                 </span>
-                {aiMode && (
+                {/* Mode label — or "ready" hint before first transition */}
+                {aiMode ? (
                   <p className={`text-[9px] mt-0.5 tracking-wider ${
                     aiMode === "external" || aiMode === "generation-unavailable"
                       ? "text-amber-500/60"
@@ -440,9 +506,18 @@ const Index = () => {
                                                             "aiModeExternal"
                     )}
                   </p>
+                ) : (
+                  <p className="text-[9px] mt-0.5 tracking-wider text-emerald-400/50">
+                    Ready — next track will be matched
+                  </p>
                 )}
+                {/* Match reason — amber when it crossed a vibe, green when it stayed */}
                 {aiMode === "library" && currentBridge && !currentBridge.isBridge && (
-                  <p className="text-[9px] text-emerald-400/40 mt-0.5 tracking-wide">
+                  <p className={`text-[9px] mt-0.5 tracking-wide ${
+                    currentBridge.matchReason.startsWith("↗")
+                      ? "text-amber-400/60"
+                      : "text-emerald-400/40"
+                  }`}>
                     {currentBridge.matchReason}
                   </p>
                 )}
@@ -460,13 +535,24 @@ const Index = () => {
                 <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border bg-purple-900/40 text-purple-300/90 border-purple-700/30">
                   Beat Match Active
                 </span>
-                {player.currentTrack.bpm && (
+                {player.currentTrack.bpm ? (
                   <p className="text-[9px] mt-0.5 tracking-wider text-purple-400/60">
                     {player.currentTrack.bpm} BPM
                   </p>
-                )}
+                ) : !beatMatchReason ? (
+                  /* Only show "ready" hint before the first transition —
+                     once beatMatchReason is set the mode is clearly working */
+                  <p className="text-[9px] mt-0.5 tracking-wider text-purple-400/50">
+                    Ready — next track will be matched
+                  </p>
+                ) : null}
+                {/* Reason — amber when crossed a vibe, purple when stayed */}
                 {beatMatchReason && (
-                  <p className="text-[9px] text-purple-400/40 mt-0.5 tracking-wide">
+                  <p className={`text-[9px] mt-0.5 tracking-wide ${
+                    beatMatchReason.startsWith("↗")
+                      ? "text-amber-400/60"
+                      : "text-purple-400/40"
+                  }`}>
                     {beatMatchReason}
                   </p>
                 )}

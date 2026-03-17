@@ -26,7 +26,8 @@ export function useFavorites(user: User | null) {
           setFavoriteIds(ids);
           localStorage.setItem(LOCAL_KEY, JSON.stringify([...ids]));
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   const isFavorite = useCallback((trackId: string) => favoriteIds.has(trackId), [favoriteIds]);
@@ -42,7 +43,8 @@ export function useFavorites(user: User | null) {
           .delete()
           .eq("user_id", user.id)
           .eq("track_id", track.id)
-          .then(() => {});
+          .then(() => {})
+          .catch(() => {});
       }
     } else {
       newIds.add(track.id);
@@ -56,7 +58,8 @@ export function useFavorites(user: User | null) {
             duration: track.duration,
             url: track.url,
           }, { onConflict: "user_id,track_id" })
-          .then(() => {});
+          .then(() => {})
+          .catch(() => {});
       }
     }
 

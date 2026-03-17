@@ -51,7 +51,8 @@ export function useResumePlayback(user: User | null) {
           setDismissed(false);
           localStorage.setItem(LOCAL_KEY, JSON.stringify(loaded));
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   const saveResumeState = useCallback((track: Track, positionSeconds: number, playlist?: Track[]) => {
@@ -74,7 +75,8 @@ export function useResumePlayback(user: User | null) {
             playlist_json: playlist ? JSON.stringify(playlist) : null,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" })
-          .then(() => {});
+          .then(() => {})
+          .catch(() => {});
       }, 5000);
     }
   }, [user]);

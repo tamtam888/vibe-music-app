@@ -40,7 +40,8 @@ export function useRecentlyPlayed(user: User | null) {
           setRecents(loaded);
           localStorage.setItem(LOCAL_KEY, JSON.stringify(loaded));
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   const addRecent = useCallback((track: Track) => {
@@ -62,7 +63,8 @@ export function useRecentlyPlayed(user: User | null) {
           duration: track.duration,
           url: track.url,
         })
-        .then(() => {});
+        .then(() => {})
+        .catch(() => {});
     }
   }, [user]);
 

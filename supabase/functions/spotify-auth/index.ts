@@ -69,9 +69,10 @@ Deno.serve(async (req) => {
 
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok) {
-      console.error("[spotify-auth] Token exchange failed:", JSON.stringify(tokenData));
+      console.error("[spotify-auth] Token exchange failed — redirect_uri used:", redirect_uri, JSON.stringify(tokenData));
       return new Response(
-        JSON.stringify({ error: "Spotify token exchange failed", details: tokenData }),
+        // Echo redirect_uri so the frontend can tell the user exactly what to register
+        JSON.stringify({ error: "Spotify token exchange failed", redirect_uri, details: tokenData }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

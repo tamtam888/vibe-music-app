@@ -11,6 +11,31 @@ export interface SpotifyProfile {
   profile_image: string | null;
 }
 
+/**
+ * Redirect URI for Spotify OAuth — evaluated once at module load.
+ *
+ * The SAME constant is used in three places so they can never drift:
+ *   1. The authorize request  (connect)
+ *   2. The token exchange     (callback useEffect)
+ *   3. The error log
+ *
+ * Register EXACTLY this value in:
+ *   Spotify Developer Dashboard → your app → Redirect URIs
+ *
+ * Local:      http://127.0.0.1:8080
+ * Production: https://vibe-music-app-phi.vercel.app
+ *
+ * Override with VITE_REDIRECT_URI in .env for preview deployments.
+ * No /auth suffix — the callback handler lives in Index at "/".
+ */
+const REDIRECT_URI: string = (() => {
+  const explicit = (import.meta.env.VITE_REDIRECT_URI as string | undefined)?.trim();
+  if (explicit) return explicit;
+  return import.meta.env.DEV
+    ? "http://127.0.0.1:8080"
+    : "https://vibe-music-app-phi.vercel.app";
+})();
+
 export function useSpotifyConnection(user: User | null) {
   const [profile, setProfile] = useState<SpotifyProfile | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +57,8 @@ export function useSpotifyConnection(user: User | null) {
             profile_image: data.profile_image,
           });
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   // Start OAuth flow
@@ -42,17 +68,20 @@ export function useSpotifyConnection(user: User | null) {
       toast.error("Spotify is not configured. Add VITE_SPOTIFY_CLIENT_ID to your .env file.");
       return;
     }
-    const redirectUri = `${window.location.origin}`;
-    console.log("[Spotify] Starting OAuth, redirect URI:", redirectUri);
     const params = new URLSearchParams({
       response_type: "code",
       client_id: clientId,
       scope: SPOTIFY_SCOPES,
-      redirect_uri: redirectUri,
+      redirect_uri: REDIRECT_URI,
       state: "spotify_connect",
       show_dialog: "true",
     });
-    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    const authorizeUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    if (import.meta.env.DEV) {
+      console.log("SPOTIFY REDIRECT URI:", REDIRECT_URI);
+      console.log("SPOTIFY AUTHORIZE URL:", authorizeUrl);
+    }
+    window.location.href = authorizeUrl;
   }, []);
 
   // Handle OAuth callback
@@ -85,27 +114,38 @@ export function useSpotifyConnection(user: User | null) {
     url.searchParams.delete("state");
     window.history.replaceState({}, "", url.pathname + url.search);
 
+    // Use the same constant REDIRECT_URI that was used to start the OAuth flow
     let cancelled = false;
     setConnecting(true);
-    const redirectUri = window.location.origin;
     supabase.functions
       .invoke("spotify-auth", {
-        body: { code, redirect_uri: redirectUri },
+        body: { code, redirect_uri: REDIRECT_URI },
       })
       .then(async ({ data, error }) => {
         if (cancelled) return;
         setConnecting(false);
         if (error) {
           let detail = "";
+          let echoedUri = "";
           try {
             const body = await (error as any).context?.json?.();
             detail = body?.error ?? "";
+            echoedUri = body?.redirect_uri ?? "";
           } catch { /* ignore parse errors */ }
-          console.error("[Spotify] Auth failed:", detail || error.message);
+          // Use the redirect URI echoed by the edge function if available, otherwise the constant
+          const usedUri = echoedUri || REDIRECT_URI;
+          console.error(
+            "[Spotify] Auth failed:", detail || error.message,
+            "\n  Redirect URI used:", usedUri,
+            "\n  Make sure this is registered in your Spotify app dashboard."
+          );
           if (detail === "Spotify credentials not configured") {
             toast.error("Spotify not configured on the server — contact the app owner.");
           } else if (detail === "Spotify token exchange failed") {
-            toast.error("OAuth failed — verify the redirect URI is registered in your Spotify app settings.");
+            toast.error(
+              `OAuth failed — register this redirect URI in your Spotify app:\n${usedUri}`,
+              { duration: 8000 }
+            );
           } else if (detail === "Missing authorization") {
             toast.error("Not signed in — please sign in before connecting Spotify.");
           } else {
