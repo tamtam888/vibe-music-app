@@ -88,6 +88,8 @@ export function useAudioPlayer() {
       setMediaSessionState("playing");
     }).catch(() => {
       console.warn("Playback failed for", track.title);
+      setIsPlaying(false);
+      setMediaSessionState("paused");
     });
     setCurrentTrack(track);
   }, []);

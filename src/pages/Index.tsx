@@ -114,6 +114,8 @@ const Index = () => {
   const handleAIFlowNext = useCallback(() => {
     if (!aiFlowEnabled || !player.currentTrack) {
       setCurrentBridge(null);
+      // Clear override before falling back to prevent re-entering this handler
+      player.onTrackEndedOverrideRef.current = null;
       player.playNext();
       return;
     }
@@ -127,6 +129,8 @@ const Index = () => {
       player.startPlaylist([result.track], 0);
     } else {
       setCurrentBridge(null);
+      // Clear override before falling back to prevent infinite loop on empty library
+      player.onTrackEndedOverrideRef.current = null;
       player.playNext();
     }
   }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks]);
