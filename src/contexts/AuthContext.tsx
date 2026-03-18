@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
+import { AUTH_REDIRECT_URL } from "@/lib/authRedirect";
 import type { User, Session, AuthError } from "@supabase/supabase-js";
 
 /**
@@ -75,6 +76,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Set up the listener BEFORE calling getSession so we never miss an event.
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+        // Log auth callback so redirect issues are easy to diagnose.
+        if (_event === "SIGNED_IN") {
+          const fromLink = window.location.hash.includes("access_token");
+          console.log(
+            "[Auth] SIGNED_IN —",
+            fromLink ? "magic-link / email callback at" : "password sign-in",
+            fromLink ? window.location.href.split("#")[0] : ""
+          );
+        }
         // When a magic link resolves, default to "remember me = true".
         if (_event === "SIGNED_IN" && !localStorage.getItem(REMEMBER_ME_KEY)) {
           localStorage.setItem(REMEMBER_ME_KEY, "true");
@@ -120,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: "http://localhost:8080/auth" },
+        options: { emailRedirectTo: AUTH_REDIRECT_URL },
       });
       return error;
     },
@@ -132,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!supabaseConfigured) return null;
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: "http://localhost:8080/auth" },
+        options: { emailRedirectTo: AUTH_REDIRECT_URL },
       });
       return error;
     },

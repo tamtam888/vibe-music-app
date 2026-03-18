@@ -12,29 +12,34 @@ export interface SpotifyProfile {
 }
 
 /**
- * Redirect URI for Spotify OAuth — evaluated once at module load.
+ * Redirect URI for Spotify OAuth — hardcoded, evaluated once at module load.
  *
- * The SAME constant is used in three places so they can never drift:
+ * The SAME constant is used in every place so the values can never drift:
  *   1. The authorize request  (connect)
  *   2. The token exchange     (callback useEffect)
- *   3. The error log
+ *   3. Error diagnostics
  *
- * Register EXACTLY this value in:
+ * Register EXACTLY one of these values in:
  *   Spotify Developer Dashboard → your app → Redirect URIs
  *
- * Local:      http://127.0.0.1:8080
- * Production: https://vibe-music-app-phi.vercel.app
+ *   Local:      http://127.0.0.1:8080
+ *   Production: https://vibe-music-app-phi.vercel.app
  *
- * Override with VITE_REDIRECT_URI in .env for preview deployments.
- * No /auth suffix — the callback handler lives in Index at "/".
+ * No path suffix. Callback is handled at "/" inside Index.tsx.
+ * No env-var override — the value is intentionally hardcoded so it
+ * can never be accidentally set to a wrong/null/undefined value.
  */
-const REDIRECT_URI: string = (() => {
-  const explicit = (import.meta.env.VITE_REDIRECT_URI as string | undefined)?.trim();
-  if (explicit) return explicit;
-  return import.meta.env.DEV
-    ? "http://127.0.0.1:8080"
-    : "https://vibe-music-app-phi.vercel.app";
-})();
+const REDIRECT_URI: string = import.meta.env.DEV
+  ? "http://127.0.0.1:8080"
+  : "https://vibe-music-app-phi.vercel.app";
+
+// Guard: catch any build-time misconfiguration before the first user action.
+if (!REDIRECT_URI || !REDIRECT_URI.startsWith("http")) {
+  throw new Error(
+    `[Spotify] REDIRECT_URI is invalid: "${REDIRECT_URI}". ` +
+    "Expected http://127.0.0.1:8080 (dev) or https://vibe-music-app-phi.vercel.app (prod)."
+  );
+}
 
 export function useSpotifyConnection(user: User | null) {
   const [profile, setProfile] = useState<SpotifyProfile | null>(null);
@@ -77,10 +82,8 @@ export function useSpotifyConnection(user: User | null) {
       show_dialog: "true",
     });
     const authorizeUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
-    if (import.meta.env.DEV) {
-      console.log("SPOTIFY REDIRECT URI:", REDIRECT_URI);
-      console.log("SPOTIFY AUTHORIZE URL:", authorizeUrl);
-    }
+    console.log("[Spotify] REDIRECT URI:", REDIRECT_URI);
+    console.log("[Spotify] AUTHORIZE URL:", authorizeUrl);
     window.location.href = authorizeUrl;
   }, []);
 

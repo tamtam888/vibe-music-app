@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
+import { AUTH_REDIRECT_URL } from "@/lib/authRedirect";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
@@ -30,7 +31,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: "http://localhost:8080/auth" },
+      options: { emailRedirectTo: AUTH_REDIRECT_URL },
     });
     setLoading(false);
     if (error) {
@@ -48,7 +49,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
-        options: { emailRedirectTo: "http://localhost:8080/auth" },
+        options: { emailRedirectTo: AUTH_REDIRECT_URL },
       });
       setLoading(false);
       if (error) {
