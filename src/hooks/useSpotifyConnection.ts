@@ -86,7 +86,7 @@ export function useSpotifyConnection(user: User | null) {
 
   // Handle OAuth callback
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabaseConfigured) return;
     const url = new URL(window.location.href);
     const state = url.searchParams.get("state");
 

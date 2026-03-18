@@ -3,12 +3,7 @@ import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 
-// Accept either key name:
-//   VITE_SUPABASE_ANON_KEY   — standard Supabase / Vercel env var name
-//   VITE_SUPABASE_PUBLISHABLE_KEY — legacy name used in older project setup
-const SUPABASE_KEY =
-  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
-  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined);
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 /** True only when both env vars are present and non-empty. */
 export const supabaseConfigured = !!(
