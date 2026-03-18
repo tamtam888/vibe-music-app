@@ -85,11 +85,70 @@ git clone <YOUR_GIT_URL>
 # Install dependencies
 npm install
 
+# Copy env template and fill in your values
+cp .env.example .env
+
 # Start the dev server
 npm run dev
 ```
 
-The app will be available at `http://localhost:8080`.
+The app will be available at `http://127.0.0.1:8080`.
+
+---
+
+## ☁️ Deploying to Vercel
+
+### 1 — Connect the repository
+
+Import the GitHub repository in the [Vercel Dashboard](https://vercel.com/new). Vercel auto-detects Vite — no framework override needed.
+
+| Setting | Value |
+|---|---|
+| Framework Preset | Vite (auto-detected) |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
+
+### 2 — Set environment variables
+
+Add these in **Vercel Dashboard → Project → Settings → Environment Variables**:
+
+| Variable | Where to find it |
+|---|---|
+| `VITE_SUPABASE_URL` | Supabase Dashboard → Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard → Settings → API |
+| `VITE_SPOTIFY_CLIENT_ID` | [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) |
+
+`VITE_GENERATION_PROVIDER` is optional — leave unset to disable AI generation.
+
+> **Never commit `.env` to git.** It is listed in `.gitignore`. Use `.env.example` as the template.
+
+### 3 — Configure Supabase
+
+In **Supabase Dashboard → Authentication → URL Configuration**:
+
+| Setting | Value |
+|---|---|
+| **Site URL** | `https://vibe-music-app-phi.vercel.app` |
+| **Redirect URLs** | `https://vibe-music-app-phi.vercel.app` |
+| **Redirect URLs** | `http://127.0.0.1:8080` (add for local dev) |
+
+> If Site URL is wrong, email magic links will redirect to the wrong host — even if the frontend code is correct. Supabase validates `emailRedirectTo` against the allow-list server-side.
+
+### 4 — Configure Spotify
+
+In the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) → your app → **Redirect URIs**, add exactly:
+
+```
+https://vibe-music-app-phi.vercel.app
+http://127.0.0.1:8080
+```
+
+No `/auth` suffix. No trailing slash variants. These must match exactly what the app sends.
+
+### 5 — Deploy
+
+Push to `main`. Vercel deploys automatically on every push.
 
 ---
 
