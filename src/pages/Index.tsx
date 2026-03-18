@@ -29,6 +29,7 @@ import RecentlyPlayedPanel from "@/components/RecentlyPlayedPanel";
 import AuthControls from "@/components/AuthControls";
 import { Disc3, Settings, User, LogOut, Cloud, HardDrive, Save, ListMusic, Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
+import AppFooter from "@/components/AppFooter";
 
 const Index = () => {
   const player = useAudioPlayer();
@@ -49,7 +50,7 @@ const Index = () => {
   const [aiFlowEnabled, setAiFlowEnabled] = useState(false);
   const [beatMatchEnabled, setBeatMatchEnabled] = useState(false);
   const [currentBridge, setCurrentBridge] = useState<AIFlowQueueItem | null>(null);
-  const [aiMode, setAiMode] = useState<"library" | "external" | "generating" | "generation-unavailable" | null>(null);
+  const [aiMode, setAiMode] = useState<"same-vibe" | "cross-vibe" | "external" | "generating" | "generation-unavailable" | null>(null);
   const [beatMatchReason, setBeatMatchReason] = useState<string | null>(null);
   const isGeneratingRef = useRef(false);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
@@ -162,7 +163,7 @@ const Index = () => {
     }
 
     if (result) {
-      setAiMode("library");
+      setAiMode(crossedVibe ? "cross-vibe" : "same-vibe");
       const ownerVibe = library.vibes.find((v) =>
         v.tracks.some((t) => t.id === result!.track.id)
       );
@@ -191,7 +192,7 @@ const Index = () => {
         const context = buildGenerationContext(player.currentTrack, library.vibes);
         const generated = await generationProvider.generate(context);
         if (generated) {
-          setAiMode("library");
+          setAiMode("same-vibe");
           const ownerVibe = library.vibes.find((v) =>
             v.tracks.some((t) => t.id === generated.id)
           );
@@ -401,6 +402,12 @@ const Index = () => {
           >
             {t("vintageVibePlayer")}
           </p>
+          <p
+            className="text-[11px] font-semibold tracking-wide mt-1 select-none"
+            style={{ color: subtitleColor }}
+          >
+            {t("welcomeToVibeMusic")}
+          </p>
           {/* Language + theme controls — part of the header composition */}
           <div className="mt-2">
             <AuthControls inline />
@@ -486,7 +493,9 @@ const Index = () => {
                     ? "bg-amber-900/40 text-amber-400/90 border-amber-700/30"
                     : aiMode === "generating"
                       ? "bg-indigo-900/40 text-indigo-400/90 border-indigo-700/30"
-                      : "bg-emerald-900/40 text-emerald-400/90 border-emerald-700/30"
+                      : aiMode === "cross-vibe"
+                        ? "bg-amber-900/40 text-amber-400/90 border-amber-700/30"
+                        : "bg-emerald-900/40 text-emerald-400/90 border-emerald-700/30"
                 }`}>
                   {t("aiFlowActive")}
                 </span>
@@ -497,10 +506,13 @@ const Index = () => {
                       ? "text-amber-500/60"
                       : aiMode === "generating"
                         ? "text-indigo-400/70"
-                        : "text-emerald-500/60"
+                        : aiMode === "cross-vibe"
+                          ? "text-amber-500/60"
+                          : "text-emerald-500/60"
                   }`}>
                     {t(
-                      aiMode === "library"                ? "aiModeLibrary" :
+                      aiMode === "same-vibe"              ? "aiModeSameVibe" :
+                      aiMode === "cross-vibe"             ? "aiModeCrossVibe" :
                       aiMode === "generating"             ? "aiModeGenerating" :
                       aiMode === "generation-unavailable" ? "aiModeGenerationUnavailable" :
                                                             "aiModeExternal"
@@ -512,7 +524,7 @@ const Index = () => {
                   </p>
                 )}
                 {/* Match reason — amber when it crossed a vibe, green when it stayed */}
-                {aiMode === "library" && currentBridge && !currentBridge.isBridge && (
+                {(aiMode === "same-vibe" || aiMode === "cross-vibe") && currentBridge && !currentBridge.isBridge && (
                   <p className={`text-[9px] mt-0.5 tracking-wide ${
                     currentBridge.matchReason.startsWith("↗")
                       ? "text-amber-400/60"
@@ -808,6 +820,9 @@ const Index = () => {
         >
           {t("craftedWithWarmth")}
         </p>
+        <div className="mt-1">
+          <AppFooter color={localOnlyColor} />
+        </div>
 
       </div>{/* end max-w-md */}
 

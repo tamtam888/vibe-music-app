@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AuthControls from "@/components/AuthControls";
 import { Loader2, Mail, Lock, Check } from "lucide-react";
+import AppFooter from "@/components/AppFooter";
 import VinylRecord from "@/components/VinylRecord";
 import { toast } from "sonner";
 
@@ -552,12 +553,7 @@ export default function AuthPage() {
           >
             {t("continueWithoutAccount")} →
           </button>
-          <p
-            className="text-[10px] tracking-wider"
-            style={{ color: c.footerText }}
-          >
-            © TK
-          </p>
+          <AppFooter color={c.footerText} />
         </div>
 
       </div>

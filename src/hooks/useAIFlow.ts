@@ -84,7 +84,7 @@ export function useAIFlow() {
           // ── Energy smoothness (primary signal) ──────────────────────────────
           const energyDiff = Math.abs(energy - currentEnergy);
           score -= energyDiff * 12;
-          if (energyDiff <= 1) reasons.push("Energy flow");
+          if (energyDiff <= 2) reasons.push("Energy flow");
 
           // ── BPM proximity ────────────────────────────────────────────────────
           if (track.bpm != null && currentBpm != null) {
@@ -139,7 +139,7 @@ export function useAIFlow() {
 
           const matchReason = reasons.length > 0
             ? reasons.join(" · ")
-            : "Best available match";
+            : "Closest energy match";
 
           return { track, score, energyDiff, matchReason };
         })

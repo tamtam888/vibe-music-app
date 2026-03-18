@@ -67,8 +67,9 @@ export function useBeatMatch() {
           let score = 0;
 
           // ── Primary: BPM proximity or energy-as-proxy ────────────────────────
-          if (currentBpm != null && track.bpm != null) {
-            const bpmDiff = Math.abs(track.bpm - currentBpm);
+          const hasBpm = currentBpm != null && track.bpm != null;
+          if (hasBpm) {
+            const bpmDiff = Math.abs(track.bpm! - currentBpm!);
             score -= bpmDiff * 2;
             if (bpmDiff < 15) reasons.push(`${track.bpm} BPM`);
           } else {
@@ -98,7 +99,7 @@ export function useBeatMatch() {
           // ── Tiebreaker ───────────────────────────────────────────────────────
           score += Math.random() * 4;
 
-          const matchReason = reasons.length > 0 ? reasons.join(" · ") : "Best BPM match";
+          const matchReason = reasons.length > 0 ? reasons.join(" · ") : hasBpm ? "Best BPM match" : "Energy match";
           return { track, score, matchReason };
         })
         .sort((a, b) => b.score - a.score);
