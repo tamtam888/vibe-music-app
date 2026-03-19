@@ -27,6 +27,7 @@ import SaveMixDialog from "@/components/SaveMixDialog";
 import MyMixesPanel from "@/components/MyMixesPanel";
 import RecentlyPlayedPanel from "@/components/RecentlyPlayedPanel";
 import AuthControls from "@/components/AuthControls";
+import BPMScannerModal from "@/components/BPMScannerModal";
 import { Disc3, Settings, User, LogOut, Cloud, HardDrive, Save, ListMusic, Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
 import AppFooter from "@/components/AppFooter";
@@ -55,6 +56,8 @@ const Index = () => {
   const isGeneratingRef = useRef(false);
   const aiFlowEnabledRef = useRef(false);
   const beatMatchEnabledRef = useRef(false);
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const [bpmScannerOpen, setBpmScannerOpen] = useState(false);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
   const [showMyMixes, setShowMyMixes] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
@@ -280,6 +283,31 @@ const Index = () => {
   }, [aiFlowEnabled, beatMatchEnabled, handleAIFlowNext, handleBeatMatchNext]);
 
   const effectiveNext = aiFlowEnabled ? handleAIFlowNext : beatMatchEnabled ? handleBeatMatchNext : player.playNext;
+
+  // ── AI Track Generation ───────────────────────────────────────────────────────
+  const handleGenerateTrack = useCallback(async () => {
+    if (!player.currentTrack || isAIGenerating) return;
+    if (!generationProvider.isConfigured) {
+      toast("AI generation not configured — add VITE_REPLICATE_API_TOKEN to Vercel env vars", { duration: 5000 });
+      return;
+    }
+    setIsAIGenerating(true);
+    toast("✨ Generating AI track in this vibe…", { duration: 4000 });
+    try {
+      const ctx = buildGenerationContext(player.currentTrack, library.vibes);
+      const generated = await generationProvider.generate(ctx);
+      if (generated) {
+        player.startPlaylist([generated], 0);
+        toast.success(`✨ Playing: ${generated.title}`);
+      } else {
+        toast.error("AI generation failed — try again");
+      }
+    } catch {
+      toast.error("AI generation failed");
+    } finally {
+      setIsAIGenerating(false);
+    }
+  }, [player, isAIGenerating, generationProvider, library.vibes]);
 
   // ── Voice command handler ────────────────────────────────────────────────────
   const handleVoiceResult = useCallback((transcript: string) => {
@@ -675,6 +703,10 @@ const Index = () => {
               voiceSupported={isVoiceInputSupported}
               voiceStatus={voice.status}
               onVoiceTap={handleVoiceTap}
+              canGenerate={generationProvider.isConfigured}
+              isGenerating={isAIGenerating}
+              onGenerate={player.currentTrack ? handleGenerateTrack : undefined}
+              onOpenBPMScanner={() => setBpmScannerOpen(true)}
             />
 
             <div className="my-4 h-px bg-gradient-to-r from-transparent via-amber-800/30 to-transparent" />
@@ -864,6 +896,14 @@ const Index = () => {
         }}
         mixType={aiFlowEnabled ? "ai_flow" : "manual"}
         trackCount={playedTracks.length}
+      />
+
+      <BPMScannerModal
+        open={bpmScannerOpen}
+        onClose={() => setBpmScannerOpen(false)}
+        currentTrackBPM={player.currentTrack?.bpm ?? null}
+        vibes={library.vibes}
+        onAddTrack={library.addTrack}
       />
     </div>
   );

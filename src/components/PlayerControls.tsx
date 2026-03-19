@@ -1,4 +1,4 @@
-import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap, Waves, Mic, MicOff } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Zap, Waves, Mic, MicOff, Sparkles, Loader2, ScanLine } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface PlayerControlsProps {
@@ -21,6 +21,10 @@ interface PlayerControlsProps {
   voiceSupported?: boolean;
   voiceStatus?: "idle" | "listening" | "processing" | "error";
   onVoiceTap?: () => void;
+  canGenerate?: boolean;
+  isGenerating?: boolean;
+  onGenerate?: () => void;
+  onOpenBPMScanner?: () => void;
 }
 
 function formatTime(s: number) {
@@ -50,6 +54,10 @@ const PlayerControls = ({
   voiceSupported,
   voiceStatus,
   onVoiceTap,
+  canGenerate,
+  isGenerating,
+  onGenerate,
+  onOpenBPMScanner,
 }: PlayerControlsProps) => {
   // Slider class strings must be literal so Tailwind JIT includes them.
   const seekBarClass = theme === "light"
@@ -141,6 +149,31 @@ const PlayerControls = ({
           >
             <Waves size={16} />
           </button>
+          {onOpenBPMScanner && (
+            <button
+              onClick={onOpenBPMScanner}
+              className="p-2 rounded-full transition-all text-amber-500/40 hover:text-purple-300 hover:bg-purple-900/30"
+              aria-label="BPM Scanner — find matching tracks from your files"
+              title="BPM Scanner — scan your files and find songs at the same tempo"
+            >
+              <ScanLine size={16} />
+            </button>
+          )}
+          {canGenerate && onGenerate && (
+            <button
+              onClick={onGenerate}
+              disabled={isGenerating}
+              className={`p-2 rounded-full transition-all ${
+                isGenerating
+                  ? "text-indigo-300 bg-indigo-800/50 cursor-wait"
+                  : "text-amber-500/40 hover:text-indigo-300 hover:bg-indigo-900/30"
+              }`}
+              aria-label="Generate AI track"
+              title="Generate an AI track in the current vibe"
+            >
+              {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+            </button>
+          )}
           {voiceSupported && onVoiceTap && (
             <button
               onClick={onVoiceTap}

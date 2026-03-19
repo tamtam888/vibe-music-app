@@ -131,41 +131,78 @@ export function useGenerationProvider(): GenerationProvider {
     return nullGenerationProvider;
   }
 
-  // ── Extension points ───────────────────────────────────────────────────────
-  // Uncomment and implement the matching block when you add a provider.
-  //
-  // if (providerName === "replicate") {
-  //   const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string | undefined;
-  //   if (token) {
-  //     return {
-  //       name: "Replicate MusicGen",
-  //       isConfigured: true,
-  //       async generate(ctx) {
-  //         // POST to https://api.replicate.com/v1/models/meta/musicgen/predictions
-  //         // with Authorization: Token <token> and { input: { prompt: ctx.prompt } }
-  //         // Poll prediction until status === "succeeded", return audio_output URL
-  //         // Wrap result as a Track object with a generated id
-  //         return null; // TODO: implement
-  //       },
-  //     };
-  //   }
-  // }
-  //
-  // if (providerName === "supabase") {
-  //   return {
-  //     name: "Supabase generate-music",
-  //     isConfigured: true,
-  //     async generate(ctx) {
-  //       const { data, error } = await supabase.functions.invoke("generate-music", {
-  //         body: ctx,
-  //       });
-  //       if (error || !data?.url) return null;
-  //       return { id: crypto.randomUUID(), title: data.title ?? "Generated Track",
-  //                artist: data.artist ?? "AI", duration: data.duration ?? "?",
-  //                url: data.url, energy: ctx.energy, mood: ctx.mood, texture: ctx.texture };
-  //     },
-  //   };
-  // }
+  // ── Replicate MusicGen ────────────────────────────────────────────────────
+  if (providerName === "replicate") {
+    const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string | undefined;
+    if (token) {
+      return {
+        name: "Replicate MusicGen",
+        isConfigured: true,
+        async generate(ctx) {
+          try {
+            // Create prediction (with "wait" preference — returns immediately if fast)
+            const createRes = await fetch(
+              "https://api.replicate.com/v1/models/meta/musicgen/predictions",
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Token ${token}`,
+                  "Content-Type": "application/json",
+                  Prefer: "wait=25",
+                },
+                body: JSON.stringify({
+                  input: {
+                    prompt: ctx.prompt,
+                    model_version: "stereo-melody-large",
+                    output_format: "mp3",
+                    normalization_strategy: "peak",
+                    duration: 30,
+                  },
+                }),
+              }
+            );
+            if (!createRes.ok) return null;
+            let prediction = await createRes.json();
+
+            // Poll if not yet succeeded
+            for (let i = 0; i < 40 && prediction.status !== "succeeded" && prediction.status !== "failed"; i++) {
+              await new Promise((r) => setTimeout(r, 3000));
+              const poll = await fetch(
+                `https://api.replicate.com/v1/predictions/${prediction.id}`,
+                { headers: { Authorization: `Token ${token}` } }
+              );
+              prediction = await poll.json();
+            }
+
+            if (prediction.status !== "succeeded" || !prediction.output) return null;
+
+            const audioUrl = Array.isArray(prediction.output)
+              ? prediction.output[0]
+              : prediction.output;
+
+            const energyLabel =
+              ctx.energy >= 8 ? "High Energy" :
+              ctx.energy >= 5 ? "Mid Tempo"   : "Chill";
+
+            return {
+              id: crypto.randomUUID(),
+              title: `AI · ${ctx.mood} ${energyLabel}`,
+              artist: "MusicGen AI",
+              duration: "0:30",
+              url: audioUrl,
+              energy: ctx.energy,
+              mood: ctx.mood,
+              texture: ctx.texture,
+              bpm: ctx.bpm ?? undefined,
+              source: "ai" as const,
+            };
+          } catch {
+            return null;
+          }
+        },
+      };
+    }
+  }
 
   // Unknown provider name — log a warning and fall back to null
   console.warn(`[useGenerationProvider] Unknown provider "${providerName}" — set VITE_GENERATION_PROVIDER to a supported value or "none".`);
