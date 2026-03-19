@@ -1,17 +1,32 @@
-import { SavedMix } from "@/hooks/useSavedMixes";
+import { SavedMix, getMixShareUrl } from "@/hooks/useSavedMixes";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { cn } from "@/lib/utils";
-import { Play, Trash2, Zap, Music, ListMusic } from "lucide-react";
+import { Play, Trash2, Zap, Music, ListMusic, Share2, Check } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface MyMixesPanelProps {
   mixes: SavedMix[];
   loading: boolean;
   onPlayMix: (mix: SavedMix) => void;
   onDeleteMix: (mixId: string) => void;
+  creatorName?: string;
 }
 
-const MyMixesPanel = ({ mixes, loading, onPlayMix, onDeleteMix }: MyMixesPanelProps) => {
+const MyMixesPanel = ({ mixes, loading, onPlayMix, onDeleteMix, creatorName }: MyMixesPanelProps) => {
   const { t } = useLanguage();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleShare = (mix: SavedMix) => {
+    const url = getMixShareUrl(mix, creatorName);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(mix.id);
+      toast.success("Share link copied! 🔗 Send it to anyone");
+      setTimeout(() => setCopiedId(null), 2500);
+    }).catch(() => {
+      // Fallback: open in new tab
+      window.open(url, "_blank");
+    });
+  };
 
   if (loading) {
     return (
@@ -60,6 +75,17 @@ const MyMixesPanel = ({ mixes, loading, onPlayMix, onDeleteMix }: MyMixesPanelPr
             title={t("play")}
           >
             <Play size={12} />
+          </button>
+          <button
+            onClick={() => handleShare(mix)}
+            className={`p-1.5 rounded-md transition-colors ${
+              copiedId === mix.id
+                ? "text-emerald-400 bg-emerald-900/30"
+                : "text-amber-500/30 hover:text-amber-300 hover:bg-amber-800/30 opacity-0 group-hover:opacity-100"
+            }`}
+            title="Share mix — copy link"
+          >
+            {copiedId === mix.id ? <Check size={12} /> : <Share2 size={12} />}
           </button>
           <button
             onClick={() => onDeleteMix(mix.id)}

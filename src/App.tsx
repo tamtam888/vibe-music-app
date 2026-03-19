@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { supabaseConfigured } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
+import SharePage from "./pages/SharePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,9 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+
+                {/* Share page — public, no auth required */}
+                <Route path="/share" element={<SharePage />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -803,6 +803,7 @@ const Index = () => {
                 loading={savedMixes.loading}
                 onPlayMix={handlePlayMix}
                 onDeleteMix={savedMixes.deleteMix}
+                creatorName={user?.email?.split("@")[0]}
               />
             ) : source === "spotify" ? (
               <div className="text-center py-6">

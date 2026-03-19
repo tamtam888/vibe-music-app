@@ -3,6 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { Track } from "@/data/playlists";
 import type { User } from "@supabase/supabase-js";
 
+/** Generate a shareable URL for a mix — no DB required, data encoded in the hash. */
+export function getMixShareUrl(mix: SavedMix, creatorName?: string): string {
+  const payload = {
+    n: mix.name,
+    by: creatorName,
+    t: mix.tracks.map((t) => ({
+      i: t.id,
+      ti: t.title,
+      a: t.artist,
+      d: t.duration,
+      u: t.url,
+      ...(t.bpm ? { bpm: t.bpm } : {}),
+    })),
+  };
+  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+  return `${window.location.origin}/share#${encoded}`;
+}
+
 export interface SavedMix {
   id: string;
   name: string;
