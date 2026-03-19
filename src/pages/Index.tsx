@@ -53,6 +53,8 @@ const Index = () => {
   const [aiMode, setAiMode] = useState<"same-vibe" | "cross-vibe" | "external" | "generating" | "generation-unavailable" | null>(null);
   const [beatMatchReason, setBeatMatchReason] = useState<string | null>(null);
   const isGeneratingRef = useRef(false);
+  const aiFlowEnabledRef = useRef(false);
+  const beatMatchEnabledRef = useRef(false);
   const [saveMixOpen, setSaveMixOpen] = useState(false);
   const [showMyMixes, setShowMyMixes] = useState(false);
   const [showRecents, setShowRecents] = useState(false);
@@ -127,7 +129,7 @@ const Index = () => {
   );
 
   const handleAIFlowNext = useCallback(async () => {
-    if (!aiFlowEnabled || !player.currentTrack) {
+    if (!aiFlowEnabledRef.current || !player.currentTrack) {
       setCurrentBridge(null);
       setAiMode(null);
       // Clear override before falling back to prevent re-entering this handler
@@ -221,7 +223,7 @@ const Index = () => {
   }, [aiFlowEnabled, player, buildNextTrack, library.vibes, playedTracks, favorites.favoriteIds, generationProvider]);
 
   const handleBeatMatchNext = useCallback(() => {
-    if (!beatMatchEnabled || !player.currentTrack) {
+    if (!beatMatchEnabledRef.current || !player.currentTrack) {
       player.onTrackEndedOverrideRef.current = null;
       player.playNext();
       return;
@@ -615,29 +617,38 @@ const Index = () => {
               onToggleShuffle={player.toggleShuffle}
               onToggleAIFlow={() => {
                 const enabling = !aiFlowEnabled;
+                aiFlowEnabledRef.current = enabling;
                 setAiFlowEnabled(enabling);
                 if (enabling) {
-                  setBeatMatchEnabled(false); // mutually exclusive with Beat Match
+                  beatMatchEnabledRef.current = false;
+                  setBeatMatchEnabled(false);
                   setBeatMatchReason(null);
+                  setCurrentBridge(null);
+                  setAiMode(null);
                   resetFlow();
                   const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
                   if (totalTracks <= 1) {
                     toast("AI Radio on · add more tracks for smart matching to work", { duration: 4000 });
+                  } else if (player.currentTrack) {
+                    toast("AI Radio · finding best match...", { duration: 2000 });
+                    handleAIFlowNext();
                   } else {
-                    toast("AI Radio on · next track will be matched by energy & mood", { duration: 3000 });
+                    toast("AI Radio on · play a track to start smart matching", { duration: 3000 });
                   }
                 } else {
+                  setCurrentBridge(null);
+                  setAiMode(null);
                   toast("AI Radio off", { duration: 2000 });
                 }
-                setCurrentBridge(null);
-                setAiMode(null);
               }}
               beatMatch={beatMatchEnabled}
               onToggleBeatMatch={() => {
                 const enabling = !beatMatchEnabled;
+                beatMatchEnabledRef.current = enabling;
                 setBeatMatchEnabled(enabling);
                 if (enabling) {
                   // Mutually exclusive with AI Radio
+                  aiFlowEnabledRef.current = false;
                   setAiFlowEnabled(false);
                   setCurrentBridge(null);
                   setAiMode(null);
@@ -646,8 +657,11 @@ const Index = () => {
                   const totalTracks = library.vibes.reduce((sum, v) => sum + v.tracks.length, 0);
                   if (totalTracks <= 1) {
                     toast("Beat Match on · add more tracks for BPM matching to work", { duration: 4000 });
+                  } else if (player.currentTrack) {
+                    toast("Beat Match · finding closest BPM...", { duration: 2000 });
+                    handleBeatMatchNext();
                   } else {
-                    toast("Beat Match on · next track will be picked by closest BPM", { duration: 3000 });
+                    toast("Beat Match on · play a track to start BPM matching", { duration: 3000 });
                   }
                 } else {
                   setBeatMatchReason(null);
