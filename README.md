@@ -1,175 +1,228 @@
-# 🎵 VIBE Music
+# VIBE Music
 
-**Your personal AI-powered music experience — curated vibes, smart transitions, and collaborative mixes.**
+**VIBE Music** is an AI-powered music experience that organizes listening around moods, energy, BPM, and flow instead of traditional static playlists.
 
-VIBE Music is a modern web-based music player that organizes your library around *vibes* — mood-based playlists powered by an intelligent flow engine. Upload your own tracks, import from Spotify, scan local files by BPM, generate AI tracks, and share mixes with anyone.
+The app combines a custom AI flow engine, mood-based playlists, BPM tools, Spotify import, shareable mixes, Hebrew/English support, PWA behavior, and Supabase-based sync.
 
----
+This project demonstrates product thinking, frontend architecture, media-focused UX, TypeScript, Supabase integrations, and AI-assisted interaction design.
 
-## ✨ Features
+## Live Demo
 
-### 🎛 AI Radio (AI Flow)
-An intelligent track-sequencing engine that analyzes energy, mood, BPM, and texture to build seamless transitions between songs. When enabled, it **immediately skips** to the best-matched next track — like having a personal DJ. Inserts classical bridges when the energy gap is too wide, avoids repeats, and boosts your favorited tracks.
+https://vibe-music-app-phi.vercel.app
 
-### 🥁 Beat Match
-Picks the next track by closest BPM to the current song. When enabled, immediately skips to the best BPM match — keeping the groove consistent across your whole session.
+## Repository
 
-### 🔍 BPM Scanner
-Drag and drop audio files (mp3, wav, ogg, m4a, flac) to scan them for BPM. The scanner analyzes each file's tempo using the Web Audio API and highlights tracks that match the currently playing song's BPM. Add matches directly to any vibe.
+https://github.com/tamtam888/vibe-music-app
 
-### ✨ AI Track Generation
-Generate original 30-second AI music tracks in the current vibe's style using [Replicate MusicGen](https://replicate.com/meta/musicgen). The prompt is built automatically from the current track's energy, mood, BPM, and texture. Requires `VITE_REPLICATE_API_TOKEN` and `VITE_GENERATION_PROVIDER=replicate`.
+## Portfolio
 
-### 🎧 Curated Vibes
-Browse built-in vibes (80s, 90s Rock, Pop, Energy, Israeli, Classical) or create unlimited custom vibes with your own emoji, color, and description. Each vibe is a living playlist you can grow over time.
+Project screenshots and additional portfolio context are available here:
 
-### 🔗 Spotify Link Support
-Paste any Spotify track, album, or playlist URL to import music into your vibes. Metadata (title, artist, artwork) is fetched automatically via Supabase Edge Functions.
-
-### 🤝 Share Mixes
-Save any listening session as a named mix. Share it with a unique link — anyone with the link can open the mix and play it directly, no account required.
-
-### ☁️ Cloud Sync
-Sign in to sync your entire library, custom vibes, settings, and preferences across devices. Everything is saved automatically with debounced writes to avoid excessive calls.
-
-### 🔐 Authentication
-Email-based signup, password login, and magic-link (passwordless) login. User sessions persist across visits. All user data is scoped to the authenticated user.
-
-### 🎨 Theme Support
-Toggle between light and dark modes. Your preference syncs to the cloud when signed in.
-
-### 🌐 Hebrew / English
-Full bilingual support with RTL layout for Hebrew. Switch languages instantly from the UI — your choice is remembered.
-
-### 📱 PWA / Installable App
-VIBE Music is a Progressive Web App. Install it on your phone or desktop for a native-like experience with offline-capable assets and a custom app icon.
+https://tamtam888.github.io/MyPortfolio/
 
 ---
 
-## 🛡 Security
+## Core Features
 
-| Layer | Detail |
-|---|---|
-| **Input Sanitization** | All user-provided text is stripped of HTML tags and script content before storage and display. |
-| **URL Validation** | External URLs are validated for safe protocols (`http`/`https` only). Spotify imports are restricted to the `open.spotify.com` domain. |
-| **Safe Rendering** | No use of `dangerouslySetInnerHTML` with user content. All text is rendered as safe React text nodes. |
-| **Environment Variables** | Only public/anon keys are exposed to the client bundle. Private secrets (Spotify client secret, Replicate token, service role keys) are kept server-side. |
-| **Row Level Security** | Every user-data table enforces RLS policies ensuring users can only read and write their own records. |
-| **Upload Protection** | File uploads are validated by extension, MIME type, and size (50 MB limit). Executable and script file types are explicitly blocked. |
+| Area | Details |
+|------|---------|
+| AI Radio | Custom sequencing engine that chooses the next track by mood, energy, BPM, texture, favorites, and flow continuity |
+| Beat Match | Selects the next track by closest BPM to keep the listening session consistent |
+| BPM Scanner | Scans local audio files with the Web Audio API and identifies tracks that match the current vibe |
+| AI Track Generation | Optional Replicate MusicGen integration for short AI-generated tracks based on the current vibe |
+| Curated Vibes | Built-in and custom mood-based playlists with emoji, color, description, and track grouping |
+| Spotify Import | Spotify links can be imported through Supabase Edge Functions for metadata enrichment |
+| Shareable Mixes | Listening sessions can be saved and shared through a unique link |
+| Cloud Sync | Authenticated users can sync library, custom vibes, settings, and preferences across devices |
+| Authentication | Supabase Auth with email/password and magic-link flows |
+| Hebrew and English | Bilingual UI with RTL support for Hebrew |
+| PWA | Installable web app behavior with manifest and service-worker setup |
 
 ---
 
-## 🏗 Tech Stack
+## Product Focus
+
+VIBE Music was built as a product experiment around a simple idea: music apps should understand the emotional flow of a listening session, not only store playlists.
+
+The main product decisions are:
+
+- Organize music around vibes and listening context
+- Use AI logic to improve the next-track decision
+- Keep users in control while offering smart sequencing
+- Support bilingual Hebrew/English UX
+- Make the app usable across devices through cloud sync and PWA support
+- Treat sharing as a core experience, not an afterthought
+
+---
+
+## Security and Data Handling
+
+| Layer | Approach |
+|------|----------|
+| Input Sanitization | User-provided text is sanitized before storage and display |
+| URL Validation | External links are validated and Spotify imports are restricted to Spotify domains |
+| Safe Rendering | User content is rendered as React text, not unsafe HTML |
+| Environment Variables | Private secrets are kept outside the client bundle and handled server-side where required |
+| Row Level Security | User-owned data is scoped with Supabase RLS policies |
+| Upload Protection | File type and size checks reduce unsafe upload behavior |
+
+---
+
+## Tech Stack
 
 | Category | Technology |
-|---|---|
+|----------|------------|
 | Frontend | React 18, TypeScript, Vite |
-| Styling | Tailwind CSS, shadcn/ui, CSS custom properties |
-| State | React Context, TanStack Query |
-| Backend | Supabase (PostgreSQL, Auth, Edge Functions, Storage) |
-| AI Flow | Custom energy/mood/BPM/texture scoring engine |
-| AI Generation | Replicate MusicGen (`meta/musicgen`) |
-| BPM Detection | Web Audio API — client-side beat detection |
-| PWA | Service Worker, Web App Manifest |
+| Routing | React Router |
+| Styling | Tailwind CSS, shadcn/ui, Radix UI, CSS custom properties |
+| State and Data | React Context, TanStack Query |
+| Backend | Supabase, PostgreSQL, Auth, Edge Functions, Storage |
+| AI Flow | Custom energy, mood, BPM, and texture scoring logic |
+| AI Generation | Optional Replicate MusicGen integration |
+| Audio | Web Audio API for BPM analysis |
+| PWA | Web App Manifest and service-worker setup |
+| Testing | Vitest, React Testing Library |
+| Deployment | Vercel-ready Vite build |
 
 ---
 
-## 🗺 Future Roadmap
+## Project Structure
 
-- **Crossfade** — smooth audio fade between tracks like a real DJ
-- **Equalizer & audio effects** — per-vibe EQ presets
-- **Social discovery** — explore public vibes and mixes from other users
-- **Listening stats** — personal analytics on play history and vibe usage
-- **Offline playback** — cache tracks locally for true offline listening
-- **Mobile native wrapper** — Capacitor or TWA for app store distribution
-- **Playlist import** — bulk import from YouTube Music, Apple Music, and SoundCloud
+```text
+vibe-music-app/
+  src/
+    components/       UI components and app sections
+    contexts/         Shared app state and preferences
+    hooks/            Reusable React hooks
+    integrations/     Supabase and external service integrations
+    lib/              Utility logic and shared helpers
+    pages/            Route-level screens
+  public/             Static assets and PWA files
+  supabase/           Supabase functions and configuration
+  package.json        Scripts and dependencies
+  vite.config.ts      Vite configuration
+  README.md
+```
 
 ---
 
-## 🚀 Getting Started
+## Local Setup
 
-```sh
-# Clone the repository
-git clone <YOUR_GIT_URL>
+### 1. Clone and install
 
-# Install dependencies
+```bash
+git clone https://github.com/tamtam888/vibe-music-app.git
+cd vibe-music-app
 npm install
+```
 
-# Copy env template and fill in your values
-cp .env.example .env
+### 2. Configure environment variables
 
-# Start the dev server
+Create a local `.env` file based on `.env.example` and add the required values:
+
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_SPOTIFY_CLIENT_ID=your-spotify-client-id
+VITE_GENERATION_PROVIDER=replicate
+VITE_REPLICATE_API_TOKEN=optional-token-for-ai-generation
+```
+
+AI generation is optional. The app can still be reviewed without enabling Replicate.
+
+### 3. Run locally
+
+```bash
 npm run dev
 ```
 
-The app will be available at `http://127.0.0.1:8080`.
+The app will run locally at:
 
----
-
-## ☁️ Deploying to Vercel
-
-### 1 — Connect the repository
-
-Import the GitHub repository in the [Vercel Dashboard](https://vercel.com/new). Vercel auto-detects Vite — no framework override needed.
-
-| Setting | Value |
-|---|---|
-| Framework Preset | Vite (auto-detected) |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Install Command | `npm install` |
-
-### 2 — Set environment variables
-
-Add these in **Vercel Dashboard → Project → Settings → Environment Variables**:
-
-| Variable | Required | Where to find it |
-|---|---|---|
-| `VITE_SUPABASE_URL` | ✅ | Supabase Dashboard → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | ✅ | Supabase Dashboard → Settings → API |
-| `VITE_SPOTIFY_CLIENT_ID` | ✅ | [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) |
-| `VITE_REPLICATE_API_TOKEN` | Optional | [replicate.com](https://replicate.com) → Account → API tokens |
-| `VITE_GENERATION_PROVIDER` | Optional | Set to `replicate` to enable AI generation |
-
-> **Never commit `.env` to git.** It is listed in `.gitignore`. Use `.env.example` as the template.
-
-### 3 — Configure Supabase
-
-In **Supabase Dashboard → Authentication → URL Configuration**:
-
-| Setting | Value |
-|---|---|
-| **Site URL** | `https://vibe-music-app-phi.vercel.app` |
-| **Redirect URLs** | `https://vibe-music-app-phi.vercel.app` |
-| **Redirect URLs** | `http://127.0.0.1:8080` (for local dev) |
-
-> ⚠️ If Site URL is wrong, magic links and email confirmation will redirect to the wrong host. This is the most common cause of broken magic-link login.
-
-### 4 — Deploy Supabase Edge Functions
-
-```sh
-npx supabase login
-npx supabase functions deploy spotify-auth --project-ref <YOUR_PROJECT_REF>
-npx supabase secrets set SPOTIFY_CLIENT_ID=<your_id> SPOTIFY_CLIENT_SECRET=<your_secret> --project-ref <YOUR_PROJECT_REF>
-```
-
-### 5 — Configure Spotify
-
-In the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) → your app → **Redirect URIs**, add exactly:
-
-```
-https://vibe-music-app-phi.vercel.app
+```text
 http://127.0.0.1:8080
 ```
 
-No `/auth` suffix. No trailing slash variants.
+---
 
-### 6 — Deploy
+## Available Scripts
 
-Push to `main`. Vercel deploys automatically on every push.
+```bash
+npm run dev
+```
+
+Starts the Vite development server.
+
+```bash
+npm run build
+```
+
+Creates a production build.
+
+```bash
+npm run preview
+```
+
+Previews the production build locally.
+
+```bash
+npm run lint
+```
+
+Runs ESLint checks.
+
+```bash
+npm test
+```
+
+Runs the Vitest test suite.
 
 ---
 
-## 📄 License
+## Deployment Notes
 
-This project is proprietary. All rights reserved.
+The app is configured for Vercel deployment.
+
+Required Vercel environment variables:
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `VITE_SUPABASE_URL` | Yes | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon public key |
+| `VITE_SPOTIFY_CLIENT_ID` | Yes | Spotify import support |
+| `VITE_GENERATION_PROVIDER` | Optional | Enables AI generation provider selection |
+| `VITE_REPLICATE_API_TOKEN` | Optional | Enables Replicate MusicGen integration |
+
+Supabase Authentication URL settings should include the production Vercel URL and the local development URL.
+
+The live demo may depend on active Supabase, Spotify, and optional AI-generation services. If a free-tier backend is paused, the source code and portfolio screenshots still document the product and architecture.
+
+---
+
+## What This Project Demonstrates
+
+- React and TypeScript product architecture
+- Audio-oriented UX with Web Audio API integration
+- Custom AI-style sequencing logic for mood and BPM flow
+- Supabase Auth, data sync, Edge Functions, and RLS-aware design
+- Bilingual Hebrew/English interface with RTL support
+- PWA-oriented frontend setup
+- Safe user input and URL handling
+- Vercel-ready deployment workflow
+
+---
+
+## Future Improvements
+
+- Crossfade between tracks
+- Equalizer and per-vibe sound presets
+- Public vibe discovery
+- Listening analytics
+- Offline playback for saved tracks
+- Native mobile wrapper with Capacitor or TWA
+- Bulk playlist import from additional music platforms
+
+---
+
+## License
+
+This project is proprietary and presented as part of a professional frontend portfolio.
