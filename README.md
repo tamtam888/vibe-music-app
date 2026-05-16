@@ -4,7 +4,7 @@
 
 The app combines a custom AI flow engine, mood-based playlists, BPM tools, Spotify import, shareable mixes, Hebrew/English support, PWA behavior, and Supabase-based sync.
 
-This project demonstrates product thinking, frontend architecture, media-focused UX, TypeScript, Supabase integrations, and AI-assisted interaction design.
+This project demonstrates product thinking, frontend architecture, media-focused UX, TypeScript-based project work, Supabase integrations, and AI-assisted interaction design.
 
 ## Live Demo
 
@@ -13,12 +13,6 @@ https://vibe-music-app-phi.vercel.app
 ## Repository
 
 https://github.com/tamtam888/vibe-music-app
-
-## Portfolio
-
-Project screenshots and additional portfolio context are available here:
-
-https://tamtam888.github.io/MyPortfolio/
 
 ---
 
@@ -72,7 +66,7 @@ The main product decisions are:
 
 | Category | Technology |
 |----------|------------|
-| Frontend | React 18, TypeScript, Vite |
+| Frontend | React 18, TypeScript-based codebase, Vite |
 | Routing | React Router |
 | Styling | Tailwind CSS, shadcn/ui, Radix UI, CSS custom properties |
 | State and Data | React Context, TanStack Query |
@@ -194,13 +188,13 @@ Required Vercel environment variables:
 
 Supabase Authentication URL settings should include the production Vercel URL and the local development URL.
 
-The live demo may depend on active Supabase, Spotify, and optional AI-generation services. If a free-tier backend is paused, the source code and portfolio screenshots still document the product and architecture.
+The live demo may depend on active Supabase, Spotify, and optional AI-generation services. If a free-tier backend is paused, the source code still documents the product and architecture.
 
 ---
 
 ## What This Project Demonstrates
 
-- React and TypeScript product architecture
+- React product architecture in a TypeScript-based codebase
 - Audio-oriented UX with Web Audio API integration
 - Custom AI-style sequencing logic for mood and BPM flow
 - Supabase Auth, data sync, Edge Functions, and RLS-aware design
