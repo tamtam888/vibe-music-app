@@ -1,4 +1,6 @@
-# VIBE Music
+# VIBE Music — Mood-Based Music PWA
+
+**React · TypeScript · Music discovery · BPM analysis · Supabase · PWA**
 
 **VIBE Music** is an AI-powered music experience that organizes listening around moods, energy, BPM, and flow instead of traditional static playlists.
 
