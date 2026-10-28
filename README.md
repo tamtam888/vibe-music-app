@@ -2,9 +2,9 @@
 
 **React · TypeScript · Music discovery · BPM analysis · Supabase · PWA**
 
-**VIBE Music** is an AI-powered music experience that organizes listening around moods, energy, BPM, and flow instead of traditional static playlists.
+**VIBE Music** is a mood-first music experience that organizes listening around moods, energy, BPM, and flow instead of traditional static playlists.
 
-The app combines a custom AI flow engine, mood-based playlists, BPM tools, Spotify import, shareable mixes, Hebrew/English support, PWA behavior, and Supabase-based sync.
+The app combines a custom mood/BPM sequencing engine, mood-based playlists, BPM tools, Spotify import, shareable mixes, Hebrew/English support, PWA behavior, and Supabase-based sync.
 
 This project demonstrates product thinking, frontend architecture, media-focused UX, TypeScript-based project work, Supabase integrations, and AI-assisted interaction design.
 
@@ -43,7 +43,7 @@ VIBE Music was built as a product experiment around a simple idea: music apps sh
 The main product decisions are:
 
 - Organize music around vibes and listening context
-- Use AI logic to improve the next-track decision
+- Use transparent mood/BPM matching logic to improve the next-track decision
 - Keep users in control while offering smart sequencing
 - Support bilingual Hebrew/English UX
 - Make the app usable across devices through cloud sync and PWA support
